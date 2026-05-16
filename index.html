@@ -1,0 +1,1036 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Planet — Servicio Técnico</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f4ff;
+    --surface: #ffffff;
+    --border: #dde3f0;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --accent: #1d4ed8;
+    --accent-light: #dbeafe;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --yellow: #b45309;
+    --yellow-light: #fef3c7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --purple: #7c3aed;
+    --purple-light: #ede9fe;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* LOGIN SCREEN */
+.login-overlay {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px;
+}
+.login-card {
+  background: var(--surface); padding: 35px 30px; border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); width: 100%; max-width: 400px;
+  border: 1px solid var(--border); text-align: center;
+}
+.login-logo { font-family: var(--mono); font-size: 22px; font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; }
+.login-logo span { color: #2563eb; }
+.login-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 25px; }
+.login-card .form-group { text-align: left; }
+.login-card .btn-primary { width: 100%; justify-content: center; padding: 12px; margin-top: 10px; font-size: 14px; }
+
+/* LAYOUT */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar {
+width: 230px; background: #0f172a; color: #fff;
+display: flex; flex-direction: column; flex-shrink: 0;
+}
+.sidebar-logo { padding: 22px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.logo-name { font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: 1px; color: #fff; }
+.logo-name span { color: #60a5fa; }
+.logo-sub { font-size: 10.5px; color: rgba(255,255,255,0.35); margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+.sidebar nav { padding: 14px 10px; flex: 1; }
+.nav-item {
+display: flex; align-items: center; gap: 10px;
+padding: 10px 12px; border-radius: 8px; cursor: pointer;
+font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.55);
+transition: all 0.15s; margin-bottom: 2px;
+}
+.nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.nav-item.active { background: var(--accent); color: #fff; }
+.nav-item.logout-item { color: #f87171; margin-top: 20px; border: 1px dashed rgba(248, 113, 113, 0.2); }
+.nav-item.logout-item:hover { background: rgba(239, 68, 68, 0.15); color: #fee2e2; }
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.sidebar-footer { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10.5px; color: rgba(255,255,255,0.25); }
+
+/* MAIN */
+.main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.topbar {
+background: var(--surface); border-bottom: 1px solid var(--border);
+padding: 14px 26px; display: flex; align-items: center; justify-content: space-between;
+position: sticky; top: 0; z-index: 10;
+}
+.topbar h2 { font-size: 16px; font-weight: 600; }
+.topbar-actions { display: flex; gap: 8px; }
+
+.btn {
+display: inline-flex; align-items: center; gap: 6px;
+padding: 8px 15px; border-radius: 8px; font-size: 13px;
+font-weight: 500; cursor: pointer; border: none;
+font-family: var(--sans); transition: all 0.15s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #1e40af; }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: 5px 11px; font-size: 12px; }
+.btn svg { width: 13px; height: 13px; }
+
+.content { padding: 22px 26px; flex: 1; }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: transform 0.15s, box-shadow 0.15s; }
+.stat-card.clickable { cursor: pointer; }
+.stat-card.clickable:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.05); border-color: var(--accent); }
+.stat-card .label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
+.stat-card .value { font-family: var(--mono); font-size: 26px; font-weight: 700; margin: 6px 0 3px; }
+.stat-card .sub { font-size: 11.5px; color: var(--text-muted); }
+.stat-card.blue .value { color: var(--accent); }
+.stat-card.green .value { color: var(--green); }
+.stat-card.yellow .value { color: var(--yellow); }
+
+/* SECTION */
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-title { font-size: 14px; font-weight: 600; }
+
+/* TABLE */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+thead tr { border-bottom: 1px solid var(--border); background: var(--bg); }
+th { padding: 10px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); text-align: left; white-space: nowrap; }
+td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f8faff; }
+
+/* BADGES */
+.badge {
+display: inline-flex; align-items: center; gap: 4px;
+padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.badge::before { content:''; width:5px; height:5px; border-radius:50%; }
+.badge-pending { background: var(--yellow-light); color: var(--yellow); }
+.badge-pending::before { background: var(--yellow); }
+.badge-progress { background: var(--accent-light); color: var(--accent); }
+.badge-progress::before { background: var(--accent); }
+.badge-done { background: var(--green-light); color: var(--green); }
+.badge-done::before { background: var(--green); }
+.badge-waiting { background: var(--purple-light); color: var(--purple); }
+.badge-waiting::before { background: var(--purple); }
+
+.tag {
+display: inline-flex; align-items: center;
+padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
+}
+.tag-warranty { background: #fef3c7; color: #92400e; }
+.tag-service  { background: #dbeafe; color: #1e40af; }
+.tag-revision { background: #f0fdf4; color: #166534; }
+.tag-paid     { background: var(--green-light); color: var(--green); }
+.tag-unpaid   { background: var(--red-light); color: var(--red); }
+.tag-waiting  { background: var(--yellow-light); color: var(--yellow); }
+.tag-on       { background: #e0f2fe; color: #0369a1; }
+.tag-off      { background: #fee2e2; color: #991b1b; }
+.tag-reviewed { background: #f0fdf4; color: #15803d; }
+.tag-advisor  { background: #ede9fe; color: #5b21b6; }
+.tag-unlock   { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+
+/* SEARCH */
+.search-bar {
+display: flex; align-items: center; gap: 8px;
+background: var(--surface); border: 1.5px solid var(--border);
+border-radius: 8px; padding: 7px 12px; width: 220px;
+}
+.search-bar svg { color: var(--text-muted); width: 14px; flex-shrink: 0; }
+.search-bar input { border: none; outline: none; font-size: 13px; font-family: var(--sans); background: transparent; width: 100%; color: var(--text); }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 560px; padding: 26px; box-shadow: 0 20px 60px rgba(0,0,0,0.18); max-height: 92vh; overflow-y: auto; }
+.modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.form-group label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input, .form-group select, .form-group textarea {
+padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+font-size: 13.5px; font-family: var(--sans); outline: none;
+transition: border 0.15s; background: var(--bg); color: var(--text);
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); background: #fff; }
+.form-group textarea { resize: vertical; min-height: 65px; }
+.form-divider { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; padding: 8px 0 4px; border-top: 1px solid var(--border); margin: 6px 0 10px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+
+/* AVISO GIGANTE DE ORDEN CREADA */
+.big-success-alert {
+  display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); z-index: 200;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.big-success-alert.open { display: flex; }
+.big-alert-box {
+  background: var(--surface); padding: 40px; border-radius: 24px; text-align: center;
+  max-width: 500px; width: 100%; box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.big-alert-box .icon { font-size: 70px; margin-bottom: 15px; }
+.big-alert-box h4 { font-size: 28px; font-weight: 700; color: var(--green); margin-bottom: 10px; }
+.big-alert-box p { font-size: 15px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
+
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* RADIO GROUP */
+.radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.radio-opt { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.radio-opt input[type=radio] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.radio-opt span { font-size: 13px; }
+
+/* CLIENTS GRID */
+.clients-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.client-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; }
+.client-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.06); border-color: var(--accent); }
+.client-avatar { width: 30px; height: 30px; border-radius: 6px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+.client-name { font-weight: 600; font-size: 13.5px; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between; }
+.client-phone { font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px; }
+.client-advisor-tag { font-size: 11px; font-weight: 500; background: var(--purple-light); color: var(--purple); padding: 2px 6px; border-radius: 4px; display: inline-block; }
+
+/* TOASTS */
+#toast-container { position: fixed; top: 18px; right: 18px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast { display: flex; align-items: flex-start; gap: 10px; background: #0f172a; color: #fff; padding: 13px 16px; border-radius: 11px; box-shadow: 0 8px 28px rgba(0,0,0,0.22); min-width: 270px; max-width: 330px; animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1); pointer-events: all; }
+.toast.hide { animation: toastOut 0.22s ease forwards; }
+.toast-icon { font-size: 17px; flex-shrink: 0; }
+.toast-body { flex: 1; }
+.toast-title { font-size: 12.5px; font-weight: 600; margin-bottom: 1px; }
+.toast-msg { font-size: 11.5px; color: rgba(255,255,255,0.55); line-height: 1.4; }
+.toast-close { background: none; border: none; color: rgba(255,255,255,0.35); cursor: pointer; font-size: 15px; padding: 0; flex-shrink: 0; }
+.toast-close:hover { color: #fff; }
+.toast.success { border-left: 3px solid var(--green); }
+.toast.info    { border-left: 3px solid #60a5fa; }
+.toast.warning { border-left: 3px solid var(--yellow); }
+.toast.error   { border-left: 3px solid var(--red); }
+@keyframes toastIn  { from { opacity:0; transform: translateX(36px) scale(0.95); } to { opacity:1; transform:translateX(0) scale(1); } }
+@keyframes toastOut { from { opacity:0; transform: translateX(36px); } }
+
+/* VIEWS */
+.view { display: none; }
+.view.active { display: block; }
+
+/* EMPTY */
+.empty { text-align: center; padding: 50px 20px; color: var(--text-muted); font-size: 13.5px; }
+
+@media (max-width: 1024px) {
+.clients-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+.sidebar { display: none; }
+.stats-grid { grid-template-columns: 1fr; }
+.clients-grid { grid-template-columns: 1fr; }
+.form-row, .form-row-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== PANTALLA DE INICIO DE SESIÓN (LOGIN) ===== -->
+<div class="login-overlay" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">SMART <span>PLANET</span></div>
+    <div class="login-subtitle">Panel de Control Técnico</div>
+    <div class="form-group">
+      <label for="login-pass">Contraseña de Acceso</label>
+      <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key === 'Enter') checkLogin()">
+    </div>
+    <button class="btn btn-primary" onclick="checkLogin()">Ingresar al Sistema</button>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- ALERTA GIGANTE DE ÉXITO -->
+<div class="big-success-alert" id="big-alert-screen">
+  <div class="big-alert-box">
+    <div class="icon">🎉</div>
+    <h4>¡ÓRDEN PROCESADA!</h4>
+    <p id="big-alert-text">La orden se procesó correctamente en el sistema.</p>
+    <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;" onclick="closeBigAlert()">Entendido, Continuar</button>
+  </div>
+</div>
+
+<!-- CONTENEDOR PRINCIPAL DE LA APP -->
+<div class="app" id="app-container" style="display: none;">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-name">SMART <span>PLANET</span></div>
+      <div class="logo-sub">Servicio Técnico</div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="showView('dashboard',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="showView('orders',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Órdenes
+      </div>
+      <div class="nav-item" onclick="showView('clients',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Clientes
+      </div>
+      
+      <div class="nav-item logout-item" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Cerrar Sesión
+      </div>
+    </nav>
+    <div class="sidebar-footer">© Smart Planet 2026</div>
+  </aside>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+      <div class="topbar">
+        <h2>📊 Dashboard</h2>
+        <div class="topbar-actions">
+          <button class="btn btn-primary" onclick="openModal('modal-order')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva Orden
+          </button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="stats-grid">
+          <div class="stat-card yellow clickable" onclick="openFilteredStatusModal('pending', '⏳ Pendientes')">
+            <div class="label">⏳ Pendientes</div>
+            <div class="value" id="stat-progress">0</div>
+            <div class="sub">Click para ver lista ↗</div>
+          </div>
+          <div class="stat-card green clickable" onclick="openFilteredStatusModal('done', '✅ Terminadas')">
+            <div class="label">✅ Terminadas</div>
+            <div class="value" id="stat-done">0</div>
+            <div class="sub">Click para ver lista ↗</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="label">📊 Total de Órdenes</div>
+            <div class="value" id="stat-total">0</div>
+            <div class="sub">en el sistema</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <div class="section-title">Últimas Órdenes Registradas</div>
+          <div class="search-bar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Buscar..." oninput="filterOrders(this.value,'orders-tbody')">
+          </div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr>
+            <th>#</th><th>Asesor</th><th>Cliente</th><th>Modelo / Daño</th><th>Detalle Técnico</th><th>Tipo</th><th>Estado eq.</th><th>Proceso</th><th>Pago</th><th>Retirado</th><th>Costo</th><th>Proceso del técnico</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="orders-tbody"><tr><td colspan="13"><div class="empty">No hay órdenes aún.</div></td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ÓRDENES -->
+    <div id="view-orders" class="view">
+      <div class="topbar">
+        <h2>🔧 Órdenes de Reparación</h2>
+        <div class="topbar-actions">
+          <button class="btn btn-primary" onclick="openModal('modal-order')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva Orden
+          </button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="section-header">
+          <div class="section-title">Todas las órdenes</div>
+          <div class="search-bar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Buscar..." oninput="filterOrders(this.value,'orders-tbody-2')">
+          </div>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr>
+            <th>#</th><th>Asesor</th><th>Cliente</th><th>Modelo / Daño</th><th>Detalle Técnico</th><th>Tipo</th><th>Estado eq.</th><th>Proceso</th><th>Pago</th><th>Retirado</th><th>Costo</th><th>Proceso del técnico</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="orders-tbody-2"><tr><td colspan="13"><div class="empty">No hay órdenes aún.</div></td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div id="view-clients" class="view">
+      <div class="topbar">
+        <h2>👥 Panel de Clientes <span style="font-size:12px; font-weight: normal; color:var(--text-muted);">(Gestionados automáticamente)</span></h2>
+      </div>
+      <div class="content">
+        <div class="clients-grid" id="clients-grid">
+          <div class="empty" style="grid-column:1/-1">No hay clientes registrados en el sistema.</div>
+        </div>
+      </div>
+    </div>
+
+<!-- ===== MODAL: NUEVA / EDITAR ORDEN ===== -->
+<div class="modal-overlay" id="modal-order">
+  <div class="modal">
+    <h3 id="modal-order-title">Nueva Orden de Reparación</h3>
+    <input type="hidden" id="o-id-edit" value="">
+
+    <div class="form-divider">Datos del Cliente</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombre del Cliente *</label>
+        <input type="text" id="o-name" placeholder="Ej: Juan Pérez">
+      </div>
+      <div class="form-group">
+        <label>Teléfono *</label>
+        <input type="tel" id="o-phone" placeholder="Ej: +593 99 999 9999">
+      </div>
+    </div>
+
+    <div class="form-divider">Datos del Equipo</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Marca / Color *</label>
+        <input type="text" id="o-device" placeholder="Ej: iPhone 13 Negro">
+      </div>
+      <div class="form-group">
+        <label>IMEI / Serie</label>
+        <input type="text" id="o-imei" placeholder="Opcional">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Código de Desbloqueo</label>
+        <input type="text" id="o-unlock" placeholder="PIN, patrón, N/A...">
+      </div>
+      <div class="form-group">
+        <label>Fecha de Compra</label>
+        <input type="text" id="o-buydate" placeholder="Día / Mes / Año">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Estado del Equipo</label>
+      <div class="radio-group">
+        <label class="radio-opt"><input type="radio" name="o-equip" id="o-equip-apagado" value="apagado" checked><span>Apagado</span></label>
+        <label class="radio-opt"><input type="radio" name="o-equip" id="o-equip-revisado" value="revisado"><span>Revisado</span></label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Tipo de Servicio</label>
+      <div class="radio-group">
+        <label class="radio-opt"><input type="radio" name="o-type" id="o-type-servicio" value="servicio" checked><span>Servicio Técnico</span></label>
+        <label class="radio-opt"><input type="radio" name="o-type" id="o-type-garantia" value="garantia"><span>Garantía</span></label>
+        <label class="radio-opt"><input type="radio" name="o-type" id="o-type-revision" value="revision"><span>Revisión</span></label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Daño / Reparación Clasificada</label>
+      <input type="text" id="o-issue" placeholder="Elige un daño o escribe uno nuevo" list="reparaciones-list">
+      <datalist id="reparaciones-list">
+        <option value="Cambio de Display / Pantalla">
+        <option value="Cambio de Batería">
+        <option value="Cambio de Pin de Carga">
+        <option value="Reparación de Botones (Power/Volumen)">
+        <option value="Cambio de Tapa Trasera">
+        <option value="Limpieza por Humedad / Mantenimiento">
+        <option value="Reinstalación de Sistema / Software">
+      </datalist>
+    </div>
+
+    <div class="form-group">
+      <label style="color: var(--accent); font-weight: 700;">📝 Detalle de Recepción Técnico *</label>
+      <textarea id="o-detail" placeholder="Escribe el estado físico manual detallado aquí..."></textarea>
+    </div>
+
+    <div class="form-divider">Gestión</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Estado de Pago</label>
+        <div class="radio-group" style="margin-top:6px">
+          <label class="radio-opt"><input type="radio" name="o-pay" id="o-pay-pendiente" value="pendiente" checked><span>Pendiente</span></label>
+          <label class="radio-opt"><input type="radio" name="o-pay" id="o-pay-pagado" value="pagado"><span>Pagado</span></label>
+          <label class="radio-opt"><input type="radio" name="o-pay" id="o-pay-no_paga" value="no_paga"><span>No Paga</span></label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Valor Estimado ($)</label>
+        <input type="number" id="o-cost" placeholder="0">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Asesor Responsable</label>
+        <input type="text" id="o-advisor" placeholder="Nombre del asesor">
+      </div>
+      <div class="form-group">
+        <label>Estado de la Orden</label>
+        <select id="o-status">
+          <option value="pending">⏳ Pendiente</option>
+          <option value="progress">🔧 En Proceso</option>
+          <option value="waiting">📦 Esperando Repuesto</option>
+          <option value="done">✅ Terminado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>¿Equipo Retirado por Cliente?</label>
+      <div class="radio-group" style="margin-top:4px">
+        <label class="radio-opt"><input type="radio" name="o-delivered" id="o-delivered-no" value="no" checked><span class="tag tag-unpaid">❌ NO (En ST)</span></label>
+        <label class="radio-opt"><input type="radio" name="o-delivered" id="o-delivered-si" value="si"><span class="tag tag-paid">🚀 SÍ (Entregado)</span></label>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-order'); clearOrderForm();">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveOrder()">Guardar Orden</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: VENTANA AUXILIAR FILTROS POR ESTADO MODIFICADO (SÓLO COLUMNAS SOLICITADAS) ===== -->
+<div class="modal-overlay" id="modal-filtered-status">
+  <div class="modal" style="max-width: 950px;">
+    <h3 id="filtered-status-title">📋 Lista Filtrada</h3>
+    <div style="max-height: 60vh; overflow-y: auto; margin-top: 10px;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th># Orden</th>
+              <th>Asesor</th>
+              <th>Cliente</th>
+              <th>Equipo / Color</th>
+              <th>Tipo de Servicio</th>
+              <th>Detalle Técnico</th>
+              <th>Código Desbloqueo</th>
+            </tr>
+          </thead>
+          <tbody id="filtered-status-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top: 14px;">
+      <button class="btn btn-primary" onclick="closeModal('modal-filtered-status')">Cerrar Ventana</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: MENÚ HISTORIAL COMPLETO DEL CLIENTE ===== -->
+<div class="modal-overlay" id="modal-history">
+  <div class="modal" style="max-width: 700px;">
+    <h3 id="history-title">📋 Historial Completo del Cliente</h3>
+    <div id="history-content" style="max-height: 60.5vh; overflow-y: auto; padding-right: 5px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeModal('modal-history')">Cerrar Historial</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL NUEVO: VALIDACIÓN DE CONTRASEÑA ADM (OCULTA) ===== -->
+<div class="modal-overlay" id="modal-admin-auth">
+  <div class="modal" style="max-width: 360px; text-align: center;">
+    <h3 style="justify-content: center;">🔒 Confirmación Requerida</h3>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Ingrese la contraseña para realizar esta acción</p>
+    <div class="form-group" style="text-align: left;">
+      <input type="password" id="admin-auth-pass" placeholder="••••••••" style="width:100%; text-align: center; font-size: 16px;" onkeydown="if(event.key === 'Enter') submitAdminAuth()">
+    </div>
+    <div class="modal-actions" style="justify-content: center; width: 100%; margin-top: 15px;">
+      <button class="btn btn-outline" style="flex:1; justify-content: center;" onclick="closeModal('modal-admin-auth')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1; justify-content: center;" onclick="submitAdminAuth()">Verificar</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+  const CORRECT_PASSWORD = "SP2026";
+  const ADMIN_PASSWORD = "2026";
+
+  let pendingAdminAction = null;
+
+  function checkLogin() {
+    const enteredPass = document.getElementById('login-pass').value;
+    if (enteredPass === CORRECT_PASSWORD) {
+      sessionStorage.setItem('sp_logged_in', 'true');
+      initApp();
+    } else {
+      alert("Contraseña incorrecta. Inténtalo de nuevo.");
+      document.getElementById('login-pass').value = '';
+      document.getElementById('login-pass').focus();
+    }
+  }
+
+  function validateAdminAction(callbackAction) {
+    pendingAdminAction = callbackAction;
+    document.getElementById('admin-auth-pass').value = '';
+    openModal('modal-admin-auth');
+    setTimeout(() => document.getElementById('admin-auth-pass').focus(), 100);
+  }
+
+  function submitAdminAuth() {
+    const pass = document.getElementById('admin-auth-pass').value;
+    if (pass === ADMIN_PASSWORD) {
+      closeModal('modal-admin-auth');
+      if (typeof pendingAdminAction === 'function') {
+        pendingAdminAction();
+      }
+      pendingAdminAction = null;
+    } else {
+      alert("Contraseña de administrador incorrecta. Acción cancelada.");
+      closeModal('modal-admin-auth');
+      pendingAdminAction = null;
+    }
+  }
+
+  function logout() {
+    sessionStorage.removeItem('sp_logged_in');
+    document.getElementById('app-container').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-pass').value = '';
+  }
+
+  function initApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    renderAll();
+  }
+
+  window.onload = function() {
+    if (sessionStorage.getItem('sp_logged_in') === 'true') {
+      initApp();
+    }
+  };
+
+  let orders   = JSON.parse(localStorage.getItem('sp_orders')   || '[]');
+  let clients  = JSON.parse(localStorage.getItem('sp_clients')  || '[]');
+  let invoices = JSON.parse(localStorage.getItem('sp_invoices') || '[]');
+  let oc = parseInt(localStorage.getItem('sp_oc') || '1000');
+
+  function showView(name, el) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    if (el) el.classList.add('active');
+    renderAll();
+  }
+
+  function openModal(id)  { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { 
+    if (e.target === m) { 
+      m.classList.remove('open'); 
+      if(m.id === 'modal-order') clearOrderForm(); 
+    } 
+  }));
+
+  const toastIcons = { success:'✅', info:'ℹ️', warning:'⚠️', error:'❌' };
+  function showToast(title, msg='', type='success', ms=3500) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<div class="toast-icon">${toastIcons[type]}</div>
+      <div class="toast-body"><div class="toast-title">${title}</div>${msg?`<div class="toast-msg">${msg}</div>`:''}</div>
+      <button class="toast-close" onclick="dismissToast(this.parentElement)">×</button>`;
+    c.appendChild(t);
+    setTimeout(() => dismissToast(t), ms);
+  }
+  function dismissToast(el) {
+    if (!el || el.classList.contains('hide')) return;
+    el.classList.add('hide');
+    setTimeout(() => el.remove(), 250);
+  }
+
+  function triggerBigAlert(orderId, device, clientName, isEdit = false) {
+    const alertBox = document.getElementById('big-alert-screen');
+    const alertText = document.getElementById('big-alert-text');
+    if (isEdit) {
+      alertText.innerHTML = `La <strong>Orden #${orderId}</strong> de <strong>${clientName}</strong> (${device}) fue <strong>actualizada</strong> con éxito.`;
+    } else {
+      alertText.innerHTML = `La <strong>Orden #${orderId}</strong> de <strong>${clientName}</strong> (${device}) fue guardada exitosamente.`;
+    }
+    alertBox.classList.add('open');
+  }
+  function closeBigAlert() { document.getElementById('big-alert-screen').classList.remove('open'); }
+
+  /* ACTUALIZADO: RENDERIZA EXACTAMENTE LAS COLUMNAS SOLICITADAS EN EL MODAL DE PENDIENTES/ESTADOS */
+  function openFilteredStatusModal(statusTarget, titleLabel) {
+    document.getElementById('filtered-status-title').textContent = titleLabel;
+    const tbody = document.getElementById('filtered-status-tbody');
+    
+    // Si se hace click en "Pendientes", agrupamos los estados activos de taller
+    let matchedOrders;
+    if (statusTarget === 'pending') {
+      matchedOrders = orders.filter(o => o.status === 'pending' || o.status === 'progress' || o.status === 'waiting');
+    } else {
+      matchedOrders = orders.filter(o => o.status === statusTarget);
+    }
+    
+    if(matchedOrders.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty">No existen órdenes registradas bajo este estado.</div></td></tr>`;
+    } else {
+      tbody.innerHTML = matchedOrders.map(o => `
+        <tr>
+          <td><strong style="font-family:var(--mono);">#${o.id}</strong><div style="font-size:10px;color:var(--text-muted)">${o.date}</div></td>
+          <td><span class="tag tag-advisor">👤 ${o.advisor}</span></td>
+          <td><strong>${o.name}</strong><br><span style="font-size:11px;color:var(--text-muted);">${o.phone}</span></td>
+          <td><strong>${o.device}</strong></td>
+          <td><span class="tag ${svcTagClass[o.svcType]||'tag-service'}">${svcLabels[o.svcType]}</span></td>
+          <td style="max-width:250px; white-space: normal; word-break: break-word; font-size:12.5px;">${o.detail}</td>
+          <td><span class="tag tag-unlock">🔑 ${o.unlock || 'N/A'}</span></td>
+        </tr>
+      `).join('');
+    }
+    openModal('modal-filtered-status');
+  }
+
+  function openEditOrder(id) {
+    validateAdminAction(() => {
+      const o = orders.find(item => item.id === id);
+      if (!o) return;
+
+      document.getElementById('modal-order-title').textContent = `Editar Orden #${o.id}`;
+      document.getElementById('o-id-edit').value = o.id;
+      
+      document.getElementById('o-name').value = o.name;
+      document.getElementById('o-phone').value = o.phone;
+      document.getElementById('o-device').value = o.device;
+      document.getElementById('o-imei').value = o.imei || '';
+      document.getElementById('o-unlock').value = o.unlock || '';
+      document.getElementById('o-buydate').value = o.buydate === 'No especificada' ? '' : o.buydate;
+      document.getElementById('o-issue').value = o.issue;
+      document.getElementById('o-detail').value = o.detail;
+      document.getElementById('o-cost').value = o.cost;
+      document.getElementById('o-advisor').value = o.advisor;
+      document.getElementById('o-status').value = o.status;
+
+      const eqRadio = document.querySelector(`input[name="o-equip"][value="${o.equipState}"]`);
+      if(eqRadio) eqRadio.checked = true;
+
+      const typeRadio = document.querySelector(`input[name="o-type"][value="${o.svcType}"]`);
+      if(typeRadio) typeRadio.checked = true;
+
+      const payRadio = document.querySelector(`input[name="o-pay"][value="${o.payState}"]`);
+      if(payRadio) payRadio.checked = true;
+
+      const delRadio = document.querySelector(`input[name="o-delivered"][value="${o.delivered}"]`);
+      if(delRadio) delRadio.checked = true;
+
+      openModal('modal-order');
+    });
+  }
+
+  function saveOrder() {
+    const name   = document.getElementById('o-name').value.trim();
+    const phone  = document.getElementById('o-phone').value.trim();
+    const device = document.getElementById('o-device').value.trim();
+    const detail = document.getElementById('o-detail').value.trim();
+    let issue    = document.getElementById('o-issue').value.trim() || "Revisión General";
+
+    if (!name || !phone || !device || !detail) { 
+      showToast('Campos requeridos','Por favor ingresa Cliente, Teléfono, Marca/Color y Detalle Técnico.','error'); 
+      return; 
+    }
+
+    const equipState = document.querySelector('input[name="o-equip"]:checked')?.value || 'apagado';
+    const svcType    = document.querySelector('input[name="o-type"]:checked')?.value  || 'servicio';
+    const payState   = document.querySelector('input[name="o-pay"]:checked')?.value   || 'pendiente';
+    const delivered  = document.querySelector('input[name="o-delivered"]:checked')?.value || 'no';
+    const advisor    = document.getElementById('o-advisor').value.trim() || 'Sin asignar';
+    
+    const editId = document.getElementById('o-id-edit').value;
+
+    if (editId) {
+      const targetId = parseInt(editId);
+      const oIndex = orders.findIndex(item => item.id === targetId);
+      if(oIndex !== -1) {
+        orders[oIndex].name = name;
+        orders[oIndex].phone = phone;
+        orders[oIndex].device = device;
+        orders[oIndex].imei = document.getElementById('o-imei').value;
+        orders[oIndex].unlock = document.getElementById('o-unlock').value;
+        orders[oIndex].buydate = document.getElementById('o-buydate').value || 'No especificada';
+        orders[oIndex].equipState = equipState;
+        orders[oIndex].svcType = svcType;
+        orders[oIndex].payState = payState;
+        orders[oIndex].delivered = delivered;
+        orders[oIndex].issue = issue;
+        orders[oIndex].detail = detail;
+        orders[oIndex].cost = parseFloat(document.getElementById('o-cost').value) || 0;
+        orders[oIndex].status = document.getElementById('o-status').value;
+        orders[oIndex].advisor = advisor;
+
+        let clientObj = clients.find(c => c.phone === phone || c.name === name);
+        if (clientObj) {
+          clientObj.name = name;
+          clientObj.phone = phone;
+          clientObj.lastAdvisor = advisor;
+        }
+        
+        save(); closeModal('modal-order'); clearOrderForm(); renderAll();
+        triggerBigAlert(targetId, device, name, true);
+      }
+    } else {
+      const order = {
+        id: ++oc, name, phone, device,
+        imei: document.getElementById('o-imei').value,
+        unlock: document.getElementById('o-unlock').value,
+        buydate: document.getElementById('o-buydate').value || 'No especificada',
+        equipState, svcType, payState, delivered, issue, detail,
+        cost: parseFloat(document.getElementById('o-cost').value) || 0,
+        status: document.getElementById('o-status').value,
+        advisor, date: new Date().toLocaleDateString('es-EC')
+      };
+
+      orders.unshift(order);
+
+      let clientObj = clients.find(c => c.phone === phone || c.name === name);
+      if (!clientObj) {
+        clients.push({ id: Date.now(), name, phone, email:'', notes:'', lastAdvisor: advisor });
+      } else {
+        clientObj.name = name;
+        clientObj.phone = phone;
+        clientObj.lastAdvisor = advisor;
+      }
+
+      save(); closeModal('modal-order'); clearOrderForm(); renderAll();
+      triggerBigAlert(order.id, device, name, false);
+    }
+  }
+
+  function clearOrderForm() {
+    document.getElementById('modal-order-title').textContent = "Nueva Orden de Reparación";
+    document.getElementById('o-id-edit').value = "";
+    ['o-name','o-phone','o-device','o-imei','o-unlock','o-buydate','o-issue','o-detail','o-cost','o-advisor'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('o-status').value = 'pending';
+    const eq = document.getElementById('o-equip-apagado'); if(eq) eq.checked=true;
+    const tp = document.getElementById('o-type-servicio'); if(tp) tp.checked=true;
+    const py = document.getElementById('o-pay-pendiente'); if(py) py.checked=true;
+    const dl = document.getElementById('o-delivered-no'); if(dl) dl.checked=true;
+  }
+
+  function deleteOrder(id) {
+    validateAdminAction(() => {
+      if (!confirm('¿Eliminar esta orden del sistema de forma permanente?')) return;
+      
+      const orderToDelete = orders.find(o => o.id === id);
+      
+      if (orderToDelete) {
+        const clientName = orderToDelete.name;
+        const clientPhone = orderToDelete.phone;
+
+        orders = orders.filter(o => o.id !== id);
+        const remainingOrdersForClient = orders.some(o => o.name === clientName || o.phone === clientPhone);
+
+        if (!remainingOrdersForClient) {
+          clients = clients.filter(c => c.name !== clientName && c.phone !== clientPhone);
+        }
+      }
+
+      save(); 
+      renderAll(); 
+      showToast('Orden eliminada','La orden y su vinculación de cliente han sido actualizadas.','warning');
+    });
+  }
+
+  function updateStatus(id, val) {
+    const o = orders.find(o=>o.id===id); if(!o) return;
+    o.status = val; save(); renderAll();
+    showToast('Estado actualizado', `#${o.id} cambiado exitosamente.`, 'info');
+  }
+
+  function togglePay(id) {
+    const o = orders.find(o=>o.id===id); if(!o) return;
+    const cycle = { 'pendiente':'pagado', 'pagado':'no_paga', 'no_paga':'pendiente' };
+    o.payState = cycle[o.payState] || 'pendiente';
+    save(); renderAll(); showToast('Pago actualizado', `Orden #${o.id} modificada.`, 'info');
+  }
+
+  function toggleDelivered(id) {
+    const o = orders.find(o=>o.id===id); if(!o) return;
+    o.delivered = o.delivered === 'si' ? 'no' : 'si';
+    save(); renderAll(); showToast('Entrega modificada', `Estado de retiro actualizado.`, 'success');
+  }
+
+  function toggleDeliveredFromHistory(id, clientName, clientPhone) {
+    const o = orders.find(o=>o.id===id); if(!o) return;
+    o.delivered = o.delivered === 'si' ? 'no' : 'si';
+    save(); openClientHistory(clientName, clientPhone); renderAll();
+  }
+
+  function filterOrders(q, tbodyId) {
+    document.querySelectorAll(`#${tbodyId} tr[data-id]`).forEach(r => {
+      r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+    });
+  }
+
+  const statusMap = {
+    pending:  ['badge-pending',  'Pendiente'],
+    progress: ['badge-progress', 'En Proceso'],
+    waiting:  ['badge-waiting',  'Esp. Repuesto'],
+    done:     ['badge-done',     'Terminado']
+  };
+  const svcLabels   = { servicio:'🔧 Servicio', garantia:'🛡️ Garantía', revision:'🔍 Revisión' };
+  const svcTagClass = { servicio:'tag-service', garantia:'tag-warranty', revision:'tag-revision' };
+  const equipLabels = { apagado:'Apagado', revisado:'Revisado' };
+  const equipClass  = { apagado:'tag-off', revisado:'tag-reviewed' };
+
+  function renderOrders(tbodyId) {
+    const tbody = document.getElementById(tbodyId); if(!tbody) return;
+    if (!orders.length) {
+      tbody.innerHTML = `<tr><td colspan="13"><div class="empty">No hay órdenes registradas.</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = orders.map(o => {
+      const [cls, lbl] = statusMap[o.status] || statusMap.pending;
+      return `<tr data-id="${o.id}">
+        <td><strong style="font-family:var(--mono);">#${o.id}</strong><div style="font-size:10px;color:var(--text-muted)">${o.date}</div></td>
+        <td><span class="tag tag-advisor">👤 ${o.advisor}</span></td>
+        <td><div style="font-weight:600">${o.name}</div><div style="font-size:11px;color:var(--text-muted)">📞 ${o.phone}</div></td>
+        <td><div><strong>${o.device}</strong></div><div style="font-size:11px;color:var(--text-muted)">📋 ${o.issue}</div></td>
+        <td style="max-width:220px; white-space: normal; word-break: break-word; font-size:12px; background: #fffdf5; border-left: 2px solid #f59e0b; padding:8px 12px;">
+          <strong>${o.detail}</strong>
+          ${o.unlock?`<div style="font-size:10.5px;color:var(--text-muted);margin-top:2px;">🔑 Clave: ${o.unlock}</div>`:''}
+        </td>
+        <td><span class="tag ${svcTagClass[o.svcType]||'tag-service'}">${svcLabels[o.svcType]}</span></td>
+        <td><span class="tag ${equipClass[o.equipState]||'tag-on'}">${equipLabels[o.equipState]}</span></td>
+        <td><span class="badge ${cls}">${lbl}</span></td>
+        <td><button onclick="togglePay(${o.id})" class="tag ${o.payState==='pagado'?'tag-paid':o.payState==='no_paga'?'tag-unpaid':'tag-waiting'}" style="cursor:pointer;border:none;">${o.payState==='pagado'?'Pagado':o.payState==='no_paga'?'No Paga':'Pendiente'}</button></td>
+        <td><button onclick="toggleDelivered(${o.id})" class="tag ${o.delivered==='si'?'tag-paid':'tag-unpaid'}" style="cursor:pointer;border:none;font-weight:bold;">${o.delivered==='si'?' SÍ (Retirado)':'❌ NO'}</button></td>
+        <td style="font-family:var(--mono);font-weight:700">$${o.cost.toLocaleString()}</td>
+        <td>
+          <select onchange="updateStatus(${o.id},this.value)" style="font-size:11.5px;padding:4px 6px;border-radius:6px;background:var(--bg);cursor:pointer;">
+            <option value="pending"  ${o.status==='pending' ?'selected':''}>⏳ Pendiente</option>
+            <option value="progress" ${o.status==='progress'?'selected':''}>🔧 En Proceso</option>
+            <option value="waiting"  ${o.status==='waiting' ?'selected':''}>📦 Esp. Repuesto</option>
+            <option value="done"     ${o.status==='done'    ?'selected':''}>✅ Terminado</option>
+          </select>
+        </td>
+        <td>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button onclick="openEditOrder(${o.id})" style="background:none; border:none; cursor:pointer; color:var(--accent); font-size:14px; padding:2px" title="Editar Orden">✏️</button>
+            <button onclick="deleteOrder(${o.id})" style="background:none; border:none; cursor:pointer; color:var(--red); font-size:15px; padding:2px" title="Eliminar Orden">✕</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function openClientHistory(clientName, clientPhone) {
+    const title = document.getElementById('history-title');
+    const content = document.getElementById('history-content');
+    title.innerHTML = `👤 Historial de Equipos: <span style="color:var(--accent); font-weight:700;">${clientName}</span>`;
+    const clientOrders = orders.filter(o => o.name === clientName || (clientPhone && o.phone === clientPhone));
+    
+    if (clientOrders.length === 0) {
+      content.innerHTML = `<div class="empty">No existen registros vinculados a este cliente.</div>`;
+    } else {
+      content.innerHTML = clientOrders.map(o => {
+        const [cls, lbl] = statusMap[o.status] || statusMap.pending;
+        return `
+          <div style="background: var(--bg); border-radius: 10px; padding: 14px; margin-bottom: 12px; border-left: 4px solid var(--accent);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-family:var(--mono); font-weight:700; color:var(--accent);">Orden #${o.id} — ${o.date}</span>
+              <span class="badge ${cls}">${lbl}</span>
+            </div>
+            <div style="font-size:14px; font-weight:600; margin-bottom:6px;">📱 Equipo / Color: ${o.device}</div>
+            
+            <div style="margin-bottom:8px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+              <span style="font-size:11px; font-weight:700; color:var(--text-muted);">TIPO:</span>
+              <span class="tag ${svcTagClass[o.svcType]||'tag-service'}">${svcLabels[o.svcType]}</span>
+              <span class="tag tag-unlock">🔑 Clave: ${o.unlock || 'N/A'}</span>
+              <span style="margin-left:auto; font-size:11px; font-weight:700; color:var(--text-muted);">¿RETIRADO?:</span>
+              <button onclick="toggleDeliveredFromHistory(${o.id}, '${clientName.replace(/'/g, "\\'")}', '${clientPhone}')" class="tag ${o.delivered==='si'?'tag-paid':'tag-unpaid'}" style="cursor:pointer; border:none; font-weight:bold; padding:3px 10px;">
+                ${o.delivered==='si'?' SÍ':'❌ NO'}
+              </button>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">🛠️ Reparación a realizar: ${o.issue}</div>
+            <div style="background:#ffffff; border:1px dashed var(--border); border-radius:6px; padding:10px; margin-top:4px;">
+              <div style="font-size:11px; font-weight:700; color:var(--yellow); text-transform:uppercase; margin-bottom:2px;">Detalle Técnico / Observación:</div>
+              <div style="font-size:13px; font-weight:500; color:var(--text); white-space:pre-wrap;">${o.detail}</div>
+              ${o.buydate ? `<div style="font-size:11px; color:var(--text-muted); margin-top:4px;">⏳ Fecha de Compra: ${o.buydate}</div>`:''}
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:var(--text-muted);">
+              <span>👤 Asesor: ${o.advisor}</span>
+              <span style="font-weight:700; color:var(--text);">Costo: $${o.cost.toLocaleString()} (${o.payState === 'pagado' ? '✅ Pagado' : '⏳ Pendiente'})</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+    openModal('modal-history');
+  }
+
+  function renderClients() {
+    const grid = document.getElementById('clients-grid'); if(!grid) return;
+    if (!clients.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No hay clientes en el sistema.</div>'; return; }
+    const palette = ['#1d4ed8','#16a34a','#b45309','#dc2626','#7c3aed','#0891b2'];
+    
+    grid.innerHTML = clients.map(c => {
+      const initials = c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const color = palette[c.name.charCodeAt(0) % palette.length];
+      const userOrders = orders.filter(o => o.name === c.name || o.phone === c.phone);
+      const activeAdvisor = userOrders.length > 0 ? userOrders[0].advisor : (c.lastAdvisor || 'Ninguno');
+
+      return `<div class="client-card" onclick="openClientHistory('${c.name.replace(/'/g, "\\'")}', '${c.phone}')">
+        <div class="client-avatar" style="background:${color}">${initials}</div>
+        <div class="client-name"><span>${c.name}</span></div>
+        <div class="client-phone">📞 ${c.phone}</div>
+        <div style="margin-top:2px;"><span class="client-advisor-tag">👤 ${activeAdvisor}</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderStats() {
+    document.getElementById('stat-progress').textContent = orders.filter(o=>o.status==='pending' || o.status==='progress' || o.status==='waiting').length;
+    document.getElementById('stat-done').textContent     = orders.filter(o=>o.status==='done').length;
+    document.getElementById('stat-total').textContent    = orders.length;
+  }
+
+  function save() {
+    localStorage.setItem('sp_orders',   JSON.stringify(orders));
+    localStorage.setItem('sp_clients',  JSON.stringify(clients));
+    localStorage.setItem('sp_invoices', JSON.stringify(invoices));
+    localStorage.setItem('sp_oc', oc);
+  }
+
+  function renderAll() {
+    if (sessionStorage.getItem('sp_logged_in') !== 'true') return;
+    renderStats();
+    renderOrders('orders-tbody');
+    renderOrders('orders-tbody-2');
+    renderClients();
+  }
+</script>
+</body>
+</html>
