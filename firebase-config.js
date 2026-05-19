@@ -44,9 +44,3 @@ async function cargarContrasenas() {
 }
 
 cargarContrasenas();
-
-// Asegúrate de que esto se ejecute apenas cargue la app
-document.addEventListener("DOMContentLoaded", async () => {
-    await cargarContrasenas();
-    console.log("Sistema listo.");
-});
