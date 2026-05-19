@@ -1,0 +1,3 @@
+const CORRECT_PASSWORD = "SP2026";
+const ADMIN_PASSWORD = "2026";
+const INVENTORY_PASSWORD = "Harrison";
