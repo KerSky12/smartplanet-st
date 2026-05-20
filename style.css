@@ -480,7 +480,6 @@ tr:hover td { background: #f8faff; }
   /* Aumentar el tamaño de botones para que sean fáciles de presionar */
   .btn, .btn-dashboard-giant, .btn-dashboard-inventory {
     padding: 14px 20px;
-    width: 100%; /* Botones ocupan todo el ancho en móvil */
   }
 
   .dashboard-center-box {
@@ -528,13 +527,3 @@ tr:hover td { background: #f8faff; }
 }
     .toast { max-width: 90vw; }
     ```
-
-### Un consejo importante:
-Para que la tabla funcione con el truco del `data-label` que puse arriba, debes modificar tu HTML así:
-```html
-<!-- Ejemplo -->
-<tr>
-  <td data-label="Cliente">Juan Pérez</td>
-  <td data-label="Estado">Activo</td>
-  <td data-label="Acciones">Editar</td>
-</tr>
