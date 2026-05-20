@@ -451,14 +451,21 @@ tr:hover td { background: #f8faff; }
 @media (max-width: 480px) {
 .clients-grid { grid-template-columns: 1fr; }
 }
+/* --- SOLO ESTO PARA EL DASHBOARD EN MÓVIL --- */
 @media (max-width: 768px) {
-  .dashboard-center-box { 
-    flex-direction: column; 
-    padding: 0 20px; /* Agrega un pequeño margen para que no toque los bordes */
+  .dashboard-center-box {
+    /* Permitimos que los botones mantengan su tamaño original y se deslicen */
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 0 20px;
+    gap: 10px;
+    /* Esto evita que se aplasten o se vuelvan gigantes */
+    flex-wrap: nowrap;
   }
-  
+
+  /* Aseguramos que los botones no cambien de tamaño */
   .btn-dashboard-giant, 
-  .btn-dashboard-inventory { 
-    width: 100%; /* Permite que el botón se ajuste al ancho, pero mantiene sus propiedades originales */
+  .btn-dashboard-inventory {
+    flex-shrink: 0; /* Esto evita que el botón se encoja o estire */
   }
 }
