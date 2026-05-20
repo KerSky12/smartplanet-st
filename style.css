@@ -456,10 +456,11 @@ tr:hover td { background: #f8faff; }
 .menu-toggle { display: none; background: none; border: none; font-size: 20px; cursor: pointer; padding: 10px; }
 
 @media (max-width: 768px) {
-  .sidebar.active { display: flex; position: fixed; height: 100%; z-index: 100; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+  .sidebar { display: none; position: fixed; height: 100%; z-index: 100; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+  .sidebar.active { display: flex; }
   .menu-toggle { display: block; }
   .dashboard-center-box { flex-direction: column; gap: 10px; }
-  .btn-dashboard-giant, .btn-dashboard-inventory { width: 100%; justify-content: center; }
+  .btn-dashboard-giant, .btn-dashboard-inventory { width: 100%; justify-content: center; padding: 12px 20px; font-size: 14px; }
   .modal { max-width: 95%; }
   .form-group input, .form-group select { font-size: 16px; }
 }
