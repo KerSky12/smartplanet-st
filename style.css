@@ -469,3 +469,50 @@ tr:hover td { background: #f8faff; }
     flex-shrink: 0; /* Esto evita que el botón se encoja o estire */
   }
 }
+
+
+
+/* --- ADAPTACIÓN RESPONSIVA PARA CELULARES --- */
+@media (max-width: 768px) {
+    /* 1. Hacemos que el contenedor principal sea una columna */
+    .app {
+        display: flex;
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    /* 2. La sidebar ya no flota a la izquierda, se pone arriba */
+    .sidebar {
+        width: 100% !important;
+        height: auto !important;
+        position: relative !important;
+        padding-bottom: 10px;
+    }
+
+    /* 3. El contenido principal ocupa todo el ancho */
+    .main {
+        width: 100% !important;
+        padding: 10px !important;
+    }
+
+    /* 4. IMPORTANTE: Las tablas son las que causan el desborde horizontal */
+    .table-wrap {
+        width: 100% !important;
+        overflow-x: auto !important; /* Esto crea el scroll solo en la tabla */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* 5. Ajustar el dashboard para que no se vea gigante */
+    .dashboard-center-box {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    /* 6. Evitar que el menú ocupe mucho espacio vertical */
+    .sidebar nav {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 10px;
+    }
+}
