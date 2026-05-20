@@ -821,7 +821,7 @@
       await setDoc(doc(window.db, "orders", targetId.toString()), orderData);
       closeModal('modal-order'); 
       clearOrderForm();
-      triggerBigAlert(orderData, device, name, isEdit);
+      triggerBigAlert(targetId, device, name, isEdit);
     } catch (e) {
       console.error("Error al guardar: ", e);
       showToast('Error', 'No se pudo guardar en la nube.', 'error');
