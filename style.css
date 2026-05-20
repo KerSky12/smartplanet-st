@@ -1,4 +1,4 @@
-  :root {
+:root {
     --bg: #f0f4ff;
     --surface: #ffffff;
     --border: #dde3f0;
@@ -450,4 +450,16 @@ tr:hover td { background: #f8faff; }
 }
 @media (max-width: 480px) {
 .clients-grid { grid-template-columns: 1fr; }
+}
+
+/* === REGLAS AGREGADAS PARA RESPONSIVIDAD MÓVIL === */
+.menu-toggle { display: none; background: none; border: none; font-size: 20px; cursor: pointer; padding: 10px; }
+
+@media (max-width: 768px) {
+  .sidebar.active { display: flex; position: fixed; height: 100%; z-index: 100; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+  .menu-toggle { display: block; }
+  .dashboard-center-box { flex-direction: column; gap: 10px; }
+  .btn-dashboard-giant, .btn-dashboard-inventory { width: 100%; justify-content: center; }
+  .modal { max-width: 95%; }
+  .form-group input, .form-group select { font-size: 16px; }
 }
