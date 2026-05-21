@@ -1349,20 +1349,25 @@
     const palette = ['#1d4ed8','#16a34a','#b45309','#dc2626','#7c3aed','#0891b2'];
     
     grid.innerHTML = clients.map(c => {
-      const initials = c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-      const color = palette[c.name.charCodeAt(0) % palette.length];
+      // 🛡️ Validación: Si c.name está vacío o no es texto, usamos "Sin Nombre" para evitar que colapse
+      const safeName = c.name && typeof c.name === 'string' ? c.name.trim() : "Sin Nombre";
+      const initials = safeName ? safeName.split(' ').filter(w => w).map(w=>w[0]).join('').slice(0,2).toUpperCase() : "??";
+      const charCode = safeName.length > 0 ? safeName.charCodeAt(0) : 0;
+      const color = palette[charCode % palette.length];
+      
       const userOrders = orders.filter(o => o.name === c.name || o.phone === c.phone);
       const activeAdvisor = userOrders.length > 0 ? userOrders[0].advisor : (c.lastAdvisor || 'Ninguno');
 
-      return `<div class="client-card" onclick="openClientHistory('${c.name.replace(/'/g, "\\'")}', '${c.phone}')">
+      return `<div class="client-card" onclick="openClientHistory('${safeName.replace(/'/g, "\\'")}', '${c.phone || ''}')">
         <div style="display:flex; align-items:center; gap:6px;">
           <div class="client-avatar" style="background:${color}">${initials}</div>
-          <div class="client-name"><span>${c.name}</span></div>
+          <div class="client-name"><span>${safeName}</span></div>
         </div>
-        <div class="client-phone" style="margin-top:4px;">📞 ${c.phone}</div>
+        <div class="client-phone" style="margin-top:4px;">📞 ${c.phone || 'Sin teléfono'}</div>
         <div style="margin-top:2px;"><span class="client-advisor-tag">👤 ${activeAdvisor}</span></div>
       </div>`;
     }).join('');
+  }
 
     const searchVal = document.getElementById('client-search-input')?.value;
     if(searchVal) { filterClients(searchVal); }
