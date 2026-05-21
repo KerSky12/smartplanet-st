@@ -475,10 +475,10 @@ tr:hover td { background: #f8faff; }
   }
   .btn-dashboard-giant, 
   .btn-dashboard-inventory {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 14px 20px;
-    font-size: 15px;
+    align-self: center !important;   /* 1. Lo centra y evita que se estire feo */
+    max-width: 240px !important;     /* 2. Le pone el tamaño fino estilo Apple */
+    width: 100% !important;          /* Permite que use el espacio interno de forma correcta */
+    margin: 8px auto !important;     /* Lo separa del botón de arriba y lo centra */
   }
 
   /* Desplazamiento nativo ultra-suave de iOS para las tablas */
