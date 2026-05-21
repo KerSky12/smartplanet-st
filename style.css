@@ -456,9 +456,6 @@ tr:hover td { background: #f8faff; }
   .topbar { padding: 12px 16px; }
   .content { padding: 16px 14px; }
   
-  /* Tarjetas de estadísticas apiladas limpiamente */
-  .stats-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
-  
   /* Grids de clientes en móvil */
   .clients-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
   
@@ -477,7 +474,7 @@ tr:hover td { background: #f8faff; }
   .btn-dashboard-inventory {
     display: inline-flex !important;
     align-self: center !important;   /* Lo centra en la columna móvil */
-    max-width: 200px !important;     /* Evita que se haga gigante en el iPhone */
+    max-width: 150px !important;     /* Evita que se haga gigante en el iPhone */
     width: 100% !important;
     margin: 10px auto !important;    /* Le da separación horizontal y vertical */
   }
