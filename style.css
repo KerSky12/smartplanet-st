@@ -477,7 +477,7 @@ tr:hover td { background: #f8faff; }
   .btn-dashboard-inventory {
     display: inline-flex !important;
     align-self: center !important;   /* Lo centra en la columna móvil */
-    max-width: 240px !important;     /* Evita que se haga gigante en el iPhone */
+    max-width: 200px !important;     /* Evita que se haga gigante en el iPhone */
     width: 100% !important;
     margin: 10px auto !important;    /* Le da separación horizontal y vertical */
   }
