@@ -1,0 +1,23 @@
+{
+  "name": "Smart Planet - Servicio Técnico",
+  "short_name": "Smart Planet",
+  "description": "Panel de Control Técnico Smart Planet",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f0f4ff",
+  "theme_color": "#1d4ed8",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
