@@ -2,9 +2,9 @@
   "name": "Smart Planet - Servicio Técnico",
   "short_name": "Servicio Técnico",
   "description": "Panel de Control Técnico Smart Planet",
-  "start_url": "/",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f0f4ff",
+  "background_color": "#1d4ed8",
   "theme_color": "#1d4ed8",
   "icons": [
     {
