@@ -436,18 +436,60 @@ tr:hover td { background: #f8faff; }
 /* EMPTY */
 .empty { text-align: center; padding: 50px 20px; color: var(--text-muted); font-size: 13.5px; }
 
+/* ==========================================================================
+   RESPONSIVE DESIGN & APPLE OPTIMIZATIONS
+   ========================================================================== */
+
 @media (max-width: 1200px) {
-.clients-grid { grid-template-columns: repeat(4, 1fr); }
+  .clients-grid { grid-template-columns: repeat(4, 1fr); }
 }
+
 @media (max-width: 1024px) {
-.clients-grid { grid-template-columns: repeat(3, 1fr); }
+  .clients-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
 @media (max-width: 768px) {
-.sidebar { display: none; }
-.stats-grid { grid-template-columns: 1fr; }
-.clients-grid { grid-template-columns: repeat(2, 1fr); }
-.form-row, .form-row-3 { grid-template-columns: 1fr; }
+  /* Ocultar barra lateral en móviles */
+  .sidebar { display: none; }
+  
+  /* Ajustar área de contenido principal para ganar espacio en iPhone */
+  .topbar { padding: 12px 16px; }
+  .content { padding: 16px 14px; }
+  
+  /* Tarjetas de estadísticas apiladas limpiamente */
+  .stats-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+  
+  /* Grids de clientes en móvil */
+  .clients-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  
+  /* Formularios e inputs apilados verticalmente al 100% */
+  .form-row, .form-row-3 { grid-template-columns: 1fr; gap: 8px; }
+  .modal { padding: 20px; border-radius: 14px; }
+  
+  /* 🌟 OPTIMIZACIÓN DEL DASHBOARD:
+     Los botones gigantes se apilan uno arriba del otro con ancho completo */
+  .dashboard-center-box {
+    flex-direction: column;
+    gap: 12px;
+    margin: 8px 0 20px 0;
+  }
+  .btn-dashboard-giant, 
+  .btn-dashboard-inventory {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+
+  /* Desplazamiento nativo ultra-suave de iOS para las tablas */
+  .table-wrap {
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
 }
+
 @media (max-width: 480px) {
-.clients-grid { grid-template-columns: 1fr; }
+  .clients-grid { grid-template-columns: 1fr; }
+  .topbar h2 { font-size: 15px; }
+  .btn { padding: 6px 12px; font-size: 12px; }
 }
