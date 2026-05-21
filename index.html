@@ -1349,7 +1349,7 @@
     const palette = ['#1d4ed8','#16a34a','#b45309','#dc2626','#7c3aed','#0891b2'];
     
     grid.innerHTML = clients.map(c => {
-      // 🛡️ Validación: Si c.name está vacío o no es texto, usamos "Sin Nombre" para evitar que colapse
+      // 🛡️ Validación completa anti-errores
       const safeName = c.name && typeof c.name === 'string' ? c.name.trim() : "Sin Nombre";
       const initials = safeName ? safeName.split(' ').filter(w => w).map(w=>w[0]).join('').slice(0,2).toUpperCase() : "??";
       const charCode = safeName.length > 0 ? safeName.charCodeAt(0) : 0;
@@ -1367,7 +1367,6 @@
         <div style="margin-top:2px;"><span class="client-advisor-tag">👤 ${activeAdvisor}</span></div>
       </div>`;
     }).join('');
-  }
 
     const searchVal = document.getElementById('client-search-input')?.value;
     if(searchVal) { filterClients(searchVal); }
