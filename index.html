@@ -472,12 +472,13 @@
     };
   });
 
-  function checkLogin() {
+  async function checkLogin() {
     const enteredPass = document.getElementById('login-pass').value;
-    if (enteredPass === CORRECT_PASSWORD) {
+    try {
+      await window.signInWithEmailAndPassword(window.auth, "sp.servicio.st@gmail.com", enteredPass);
       sessionStorage.setItem('sp_logged_in', 'true');
       initApp();
-    } else {
+    } catch (error) {
       alert("Contraseña incorrecta. Inténtalo de nuevo.");
       document.getElementById('login-pass').value = '';
       document.getElementById('login-pass').focus();
@@ -491,9 +492,11 @@
     setTimeout(() => document.getElementById('admin-auth-pass').focus(), 100);
   }
 
-  function submitAdminAuth() {
+  async function submitAdminAuth() {
     const pass = document.getElementById('admin-auth-pass').value;
-    if (pass === ADMIN_PASSWORD) {
+    const claveAdmin = await window.obtenerClaveSegura("admin_password");
+
+    if (pass === claveAdmin && pass !== null) {
       closeModal('modal-admin-auth');
       if (typeof pendingAdminAction === 'function') {
         pendingAdminAction();
@@ -512,9 +515,11 @@
     setTimeout(() => document.getElementById('inventory-auth-pass').focus(), 100);
   }
 
-  function submitInventoryAuth() {
+  async function submitInventoryAuth() {
     const pass = document.getElementById('inventory-auth-pass').value;
-    if (pass === INVENTORY_PASSWORD) {
+    const claveInv = await window.obtenerClaveSegura("inventory_password");
+
+    if (pass === claveInv && pass !== null) {
       closeModal('modal-inventory-auth');
       inventoryEditable = true;
       
@@ -790,8 +795,8 @@
     const payState   = document.querySelector('input[name="o-pay"]:checked')?.value   || 'pendiente';
     
     const editId = document.getElementById('o-id-edit').value;
-    const { doc, setDoc } = window.dbModules;
 
+    // --- 1. PRIMERO DEFINIMOS LAS VARIABLES ---
     let targetId;
     let isEdit = false;
     let statusValue = 'pending';
@@ -806,6 +811,7 @@
       targetId = orders.length > 0 ? Math.max(...orders.map(o => o.id)) + 1 : 1001;
     }
 
+    // --- 2. LUEGO CREAMOS EL OBJETO orderData ---
     const orderData = {
       id: targetId, name, phone, device,
       imei: document.getElementById('o-imei').value,
@@ -820,6 +826,8 @@
       date: isEdit ? orders.find(o => o.id === targetId).date : new Date().toLocaleDateString('es-EC')
     };
 
+    // --- 3. AHORA SÍ GUARDAMOS EN FIRESTORE ---
+    const { doc, setDoc } = window.dbModules;
     try {
       await setDoc(doc(window.db, "orders", targetId.toString()), orderData);
       closeModal('modal-order'); 
@@ -1473,7 +1481,8 @@
   }
 </script>
     
-    <script src="app.js"></script>
     <script type="module" src="firebase-config.js"></script>
+    <script src="app.js"></script>
+
 </body>
 </html>
