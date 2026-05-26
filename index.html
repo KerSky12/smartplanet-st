@@ -526,6 +526,174 @@
   let orders = [];
   let clients = [];
 
+  // =====================================================
+  // 🔊 SISTEMA DE SONIDO — Smart Planet
+  // =====================================================
+  const _sound = (function() {
+    const PATHS = ['./sonido.mp3', 'sonido.mp3', '/sonido.mp3'];
+
+    // ── Estado ──────────────────────────────────────────────────
+    let actx         = null;   // AudioContext principal
+    let mp3Buffer    = null;   // AudioBuffer del sonido decodificado
+    let mp3Loaded    = false;  // true cuando el buffer está listo
+    let ctxUnlocked  = false;  // true tras el primer gesto del usuario
+    let _prevStatus  = {};
+    let _knownIds    = null;
+
+    // ── 1. Crear AudioContext ────────────────────────────────────
+    // Se crea al cargar; en Chrome desktop queda "suspended" hasta el primer gesto.
+    function createCtx() {
+      try {
+        actx = new (window.AudioContext || window.webkitAudioContext)();
+        console.log('[Sound] AudioContext creado, estado:', actx.state);
+      } catch(e) {
+        console.warn('[Sound] AudioContext no disponible:', e.message);
+      }
+    }
+
+    // ── 2. Cargar sonido.mp3 como ArrayBuffer y decodificarlo ────
+    // fetch() trae el archivo binario; decodeAudioData lo convierte
+    // a AudioBuffer que puede reproducirse instantáneamente sin bloqueos.
+    function loadSound() {
+      const tryFetch = (i) => {
+        if (i >= PATHS.length) { console.warn('[Sound] No se encontró sonido.mp3'); return; }
+        fetch(PATHS[i])
+          .then(r => {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.arrayBuffer();
+          })
+          .then(buf => actx.decodeAudioData(buf))
+          .then(decoded => {
+            mp3Buffer = decoded;
+            mp3Loaded = true;
+            console.log('🔊 [Sound] sonido.mp3 decodificado y listo desde:', PATHS[i]);
+          })
+          .catch(e => {
+            console.warn('[Sound] Falló', PATHS[i], '—', e.message);
+            tryFetch(i + 1);
+          });
+      };
+      tryFetch(0);
+    }
+
+    // ── 3. Desbloquear AudioContext con el primer gesto ──────────
+    // Safari exige que actx.resume() se llame DENTRO del handler del evento,
+    // de forma sincrónica. Chrome acepta hacerlo en un .then(), Safari no.
+    function setupUnlock() {
+      const EVTS = ['click','mousedown','keydown','touchstart','pointerdown'];
+      const doUnlock = () => {
+        if (ctxUnlocked || !actx) return;
+        // Llamada sincrónica dentro del evento — requerido por Safari
+        actx.resume();
+        // Silencio de 1 sample para activar el contexto
+        try {
+          const buf = actx.createBuffer(1, 1, 22050);
+          const src = actx.createBufferSource();
+          src.buffer = buf;
+          src.connect(actx.destination);
+          src.start(0);
+        } catch(e) {}
+        ctxUnlocked = true;
+        console.log('[Sound] AudioContext desbloqueado ✅ navegador:', navigator.userAgent.indexOf('Safari') > -1 && navigator.userAgent.indexOf('Chrome') === -1 ? 'Safari' : 'Otro');
+        EVTS.forEach(ev => document.removeEventListener(ev, doUnlock));
+      };
+      EVTS.forEach(ev => document.addEventListener(ev, doUnlock, { passive: true }));
+    }
+
+    // ── 4. Reproducir usando Web Audio API (nunca bloqueado) ─────
+    // BufferSource es la forma más confiable en desktop:
+    // no tiene restricciones de autoplay una vez que el contexto está desbloqueado.
+    function play(motivo) {
+      if (!actx) { console.warn('[Sound] Sin AudioContext'); return; }
+      if (!mp3Loaded || !mp3Buffer) { console.warn('[Sound] Buffer no listo aún'); return; }
+
+      // Si el contexto sigue suspended (usuario aún no interactuó),
+      // intentar resume() igual — en algunos navegadores funciona si
+      // la página tiene foco visible.
+      const doPlay = () => {
+        try {
+          const source = actx.createBufferSource();
+          source.buffer = mp3Buffer;
+          source.connect(actx.destination);
+          source.start(0);
+          console.log('🔔 [Sound] Sonando —', motivo);
+        } catch(e) {
+          console.warn('[Sound] Error al reproducir:', e.message);
+        }
+      };
+
+      if (actx.state === 'suspended') {
+        actx.resume().then(doPlay).catch(e => {
+          console.warn('[Sound] No se pudo resumir AudioContext:', e.message,
+            '— El usuario debe interactuar con la página primero.');
+        });
+      } else {
+        doPlay();
+      }
+    }
+
+    function isDesktop() {
+      // NOTA: Mac con trackpad reporta maxTouchPoints=5, por eso NO usamos esa propiedad.
+      // Solo excluimos dispositivos cuyo User-Agent indica móvil/tablet real.
+      const isMobileUA = /android|iphone|ipad|ipod|blackberry|windows phone|mobile/i.test(navigator.userAgent);
+      return !isMobileUA && window.screen.width > 1024;
+    }
+
+    function process(snapshot) {
+      // Primera carga: registrar IDs y estados sin sonar
+      if (_knownIds === null) {
+        _knownIds = new Set();
+        snapshot.forEach(d => {
+          _knownIds.add(d.id);
+          _prevStatus[d.id] = (d.data().status || '').toLowerCase();
+        });
+        console.log('[Sound] Inicio: ' + _knownIds.size + ' órdenes registradas. Desktop: ' + isDesktop());
+        return;
+      }
+
+      snapshot.docChanges().forEach(change => {
+        const id     = change.doc.id;
+        const data   = change.doc.data();
+        const status = (data.status || '').toLowerCase();
+
+        // ── NUEVA ORDEN → suena solo si este dispositivo es desktop ──
+        if (change.type === 'added' && !_knownIds.has(id)) {
+          _knownIds.add(id);
+          _prevStatus[id] = status;
+          if (isDesktop()) {
+            console.log('[Sound] Nueva orden detectada en desktop → sonando');
+            play('Nueva orden #' + (data.id || id));
+          } else {
+            console.log('[Sound] Nueva orden detectada en móvil/tablet → sin sonido');
+          }
+          return;
+        }
+
+        // ── ESTADO CAMBIÓ A "done" → suena en TODOS los dispositivos ──
+        if (change.type === 'modified') {
+          const anterior = _prevStatus[id] || '';
+          _prevStatus[id] = status;
+          if (status === 'done' && anterior !== 'done') {
+            console.log('[Sound] Orden TERMINADA detectada → sonando en todos los dispositivos');
+            play('Orden #' + (data.id || id) + ' TERMINADA');
+          }
+        }
+      });
+    }
+
+    function init() {
+      createCtx();
+      if (actx) loadSound();
+      setupUnlock();
+    }
+
+    init();
+    return { process };
+  })();
+  // =====================================================
+  // FIN SISTEMA DE SONIDO
+  // ===================================================== 
+
   let inventoryEditable = false;
   let inventoryData = {};
   
@@ -721,6 +889,9 @@
     const q = query(collection(window.db, "orders"), orderBy("id", "desc"));
     
     onSnapshot(q, (snapshot) => {
+      // 🔊 Sistema de sonido — procesa cambios ANTES de re-renderizar
+      _sound.process(snapshot);
+
       orders = [];
       clients = [];
       
