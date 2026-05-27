@@ -244,6 +244,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
             Volver al Dashboard
           </button>
+          <button class="btn" style="background:#1a7a3c; color:#fff; border:none;" onclick="exportInventoryToExcel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Exportar a Excel
+          </button>
           <button id="btn-add-model" class="btn btn-primary" style="display: none;" onclick="openAddModelModal()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Agregar Modelo
@@ -457,7 +461,7 @@
 <!-- ✅ MODAL: AGREGAR NUEVO MODELO DE IPHONE AL INVENTARIO -->
 <div class="modal-overlay" id="modal-add-model">
   <div class="modal" style="max-width: 480px;">
-    <h3>📱 Agregar Nuevo Modelo</h3>
+    <h3>Agregar Nuevo Modelo</h3>
     <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">Ingresa el nombre del modelo y su stock inicial. Se guardará en Firebase al instante.</p>
     
     <div class="form-group" style="margin-bottom: 14px;">
@@ -468,28 +472,28 @@
 
     <div class="form-row">
       <div class="form-group">
-        <label style="font-size: 12px;">📺 Display</label>
+        <label style="font-size: 12px;">Display</label>
         <input type="number" id="new-model-display" min="0" value="0"
           style="width:100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 14px;">
       </div>
       <div class="form-group">
-        <label style="font-size: 12px;">🔋 Batería (con flex)</label>
+        <label style="font-size: 12px;">Batería (con flex)</label>
         <input type="number" id="new-model-battery-flex" min="0" value="0"
           style="width:100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 14px;">
       </div>
       <div class="form-group">
-        <label style="font-size: 12px;">🔋 Batería (sin flex)</label>
+        <label style="font-size: 12px;">Batería (sin flex)</label>
         <input type="number" id="new-model-battery-noflex" min="0" value="0"
           style="width:100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 14px;">
       </div>
       <div class="form-group">
-        <label style="font-size: 12px;">🪟 Tapa Trasera</label>
+        <label style="font-size: 12px;">Tapa Trasera</label>
         <input type="number" id="new-model-backcover" min="0" value="0"
           style="width:100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 14px;">
       </div>
     </div>
     <div class="form-group" style="margin-top: 4px;">
-      <label style="font-size: 12px;">📦 Cover</label>
+      <label style="font-size: 12px;">Cover</label>
       <input type="number" id="new-model-cover" min="0" value="0"
         style="width:100%; padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: 14px;">
     </div>
@@ -501,6 +505,102 @@
         Guardar Modelo
       </button>
     </div>
+  </div>
+</div>
+
+<!-- ✅ MODAL: CLAVE DE INVENTARIO PARA ASIGNAR PIEZA -->
+<div class="modal-overlay" id="modal-inv-key-assign">
+  <div class="modal" style="max-width:360px; text-align:center;">
+    <h3 style="justify-content:center;">🔑 Clave de Inventario</h3>
+    <p style="font-size:13px; color:var(--text-muted); margin-bottom:15px;">Ingresa la clave para asignar una pieza del inventario.</p>
+    <div class="form-group" style="text-align:left;">
+      <input type="password" id="inv-key-assign-input" placeholder="••••••••" style="width:100%; text-align:center; font-size:16px;"
+        onkeydown="if(event.key==='Enter') submitInvKeyAssign()">
+    </div>
+    <div class="modal-actions" style="justify-content:center; width:100%; margin-top:15px;">
+      <button class="btn btn-outline" style="flex:1; justify-content:center;" onclick="closeModal('modal-inv-key-assign')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1; justify-content:center;" onclick="submitInvKeyAssign()">Verificar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ MODAL: ASIGNAR PIEZA DEL INVENTARIO -->
+<div class="modal-overlay" id="modal-assign-piece">
+  <div class="modal" style="max-width:460px;">
+    <h3>Asignar Pieza del Inventario</h3>
+    <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">
+      Selecciona el modelo y la pieza a descontar.
+    </p>
+
+    <div class="form-group" style="margin-bottom:14px;">
+      <label style="font-size:12px; font-weight:600; margin-bottom:6px; display:block;">Modelo del Inventario</label>
+      <!-- Custom searchable model selector -->
+      <div class="model-selector-wrap" id="assign-model-wrap">
+        <div class="model-selector-trigger" id="assign-model-trigger" onclick="toggleModelDropdown()">
+          <span class="model-selector-icon">📱</span>
+          <span class="model-selector-label" id="assign-model-label">— Selecciona un modelo —</span>
+          <svg class="model-selector-arrow" id="assign-model-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="model-selector-dropdown" id="assign-model-dropdown">
+          <div class="model-selector-search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;color:var(--text-muted)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="model-selector-search" id="assign-model-search" placeholder="Buscar modelo..." oninput="filterModelDropdown(this.value)" autocomplete="off">
+          </div>
+          <div class="model-selector-list" id="assign-model-list"></div>
+        </div>
+      </div>
+      <!-- Hidden real value used by JS -->
+      <input type="hidden" id="assign-model-select" value="">
+    </div>
+
+    <div class="form-group" style="margin-bottom:20px;">
+      <label style="font-size:12px; font-weight:600; margin-bottom:6px; display:block;">🔩 Pieza a Descontar</label>
+      <div id="assign-piece-options" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <label class="assign-piece-opt" data-piece="display">
+          <input type="radio" name="assign-piece" value="display"> Display
+        </label>
+        <label class="assign-piece-opt" data-piece="battery_flex">
+          <input type="radio" name="assign-piece" value="battery_flex"> 🔋 Batería (con Flex)
+        </label>
+        <label class="assign-piece-opt" data-piece="battery_noflex">
+          <input type="radio" name="assign-piece" value="battery_noflex"> 🔋 Batería (sin Flex)
+        </label>
+        <label class="assign-piece-opt" data-piece="backcover">
+          <input type="radio" name="assign-piece" value="backcover"> Tapa Trasera
+        </label>
+        <label class="assign-piece-opt" data-piece="cover">
+          <input type="radio" name="assign-piece" value="cover"> Cover
+        </label>
+        <label class="assign-piece-opt" data-piece="otro" style="grid-column: 1 / -1;">
+          <input type="radio" name="assign-piece" value="otro"> 🔩 Otro
+        </label>
+      </div>
+      <!-- Campo extra para "Otro" -->
+      <div id="assign-otro-field" style="display:none; margin-top:10px;">
+        <label style="font-size:12px; font-weight:600; margin-bottom:6px; display:block;">📝 Especificar pieza</label>
+        <input type="text" id="assign-otro-input" placeholder="Ej: Pin de carga, botón power..." 
+          style="width:100%; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font-family:var(--sans); font-size:14px; box-sizing:border-box;">
+      </div>
+    </div>
+
+    <!-- Vista previa del stock disponible -->
+    <div id="assign-stock-preview" style="display:none; background:var(--bg); border:1.5px solid var(--border); border-radius:8px; padding:12px; margin-bottom:16px; font-size:13px;">
+      <div style="font-weight:700; margin-bottom:4px;">Stock disponible:</div>
+      <div id="assign-stock-value" style="font-size:15px; font-weight:800; font-family:var(--mono); color:var(--accent);"></div>
+      <div id="assign-stock-warning" style="color:#ef4444; font-size:12px; margin-top:4px; display:none;">⚠️ Sin stock disponible.</div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-assign-piece')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-confirm-assign" onclick="confirmAssignPiece()" style="gap:6px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Descontar del Inventario
+      </button>
+    </div>
+    <button id="btn-delete-assign" onclick="deleteAssignedPiece()" style="display:none; margin-top:10px; width:100%; justify-content:center; border-color:var(--red); color:var(--red); gap:6px;" class="btn btn-outline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      Eliminar Pieza Asignada y Devolver al Inventario
+    </button>
   </div>
 </div>
 
@@ -525,174 +625,6 @@
   let pendingAdminAction = null;
   let orders = [];
   let clients = [];
-
-  // =====================================================
-  // 🔊 SISTEMA DE SONIDO — Smart Planet
-  // =====================================================
-  const _sound = (function() {
-    const PATHS = ['./sonido.mp3', 'sonido.mp3', '/sonido.mp3'];
-
-    // ── Estado ──────────────────────────────────────────────────
-    let actx         = null;   // AudioContext principal
-    let mp3Buffer    = null;   // AudioBuffer del sonido decodificado
-    let mp3Loaded    = false;  // true cuando el buffer está listo
-    let ctxUnlocked  = false;  // true tras el primer gesto del usuario
-    let _prevStatus  = {};
-    let _knownIds    = null;
-
-    // ── 1. Crear AudioContext ────────────────────────────────────
-    // Se crea al cargar; en Chrome desktop queda "suspended" hasta el primer gesto.
-    function createCtx() {
-      try {
-        actx = new (window.AudioContext || window.webkitAudioContext)();
-        console.log('[Sound] AudioContext creado, estado:', actx.state);
-      } catch(e) {
-        console.warn('[Sound] AudioContext no disponible:', e.message);
-      }
-    }
-
-    // ── 2. Cargar sonido.mp3 como ArrayBuffer y decodificarlo ────
-    // fetch() trae el archivo binario; decodeAudioData lo convierte
-    // a AudioBuffer que puede reproducirse instantáneamente sin bloqueos.
-    function loadSound() {
-      const tryFetch = (i) => {
-        if (i >= PATHS.length) { console.warn('[Sound] No se encontró sonido.mp3'); return; }
-        fetch(PATHS[i])
-          .then(r => {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.arrayBuffer();
-          })
-          .then(buf => actx.decodeAudioData(buf))
-          .then(decoded => {
-            mp3Buffer = decoded;
-            mp3Loaded = true;
-            console.log('🔊 [Sound] sonido.mp3 decodificado y listo desde:', PATHS[i]);
-          })
-          .catch(e => {
-            console.warn('[Sound] Falló', PATHS[i], '—', e.message);
-            tryFetch(i + 1);
-          });
-      };
-      tryFetch(0);
-    }
-
-    // ── 3. Desbloquear AudioContext con el primer gesto ──────────
-    // Safari exige que actx.resume() se llame DENTRO del handler del evento,
-    // de forma sincrónica. Chrome acepta hacerlo en un .then(), Safari no.
-    function setupUnlock() {
-      const EVTS = ['click','mousedown','keydown','touchstart','pointerdown'];
-      const doUnlock = () => {
-        if (ctxUnlocked || !actx) return;
-        // Llamada sincrónica dentro del evento — requerido por Safari
-        actx.resume();
-        // Silencio de 1 sample para activar el contexto
-        try {
-          const buf = actx.createBuffer(1, 1, 22050);
-          const src = actx.createBufferSource();
-          src.buffer = buf;
-          src.connect(actx.destination);
-          src.start(0);
-        } catch(e) {}
-        ctxUnlocked = true;
-        console.log('[Sound] AudioContext desbloqueado ✅ navegador:', navigator.userAgent.indexOf('Safari') > -1 && navigator.userAgent.indexOf('Chrome') === -1 ? 'Safari' : 'Otro');
-        EVTS.forEach(ev => document.removeEventListener(ev, doUnlock));
-      };
-      EVTS.forEach(ev => document.addEventListener(ev, doUnlock, { passive: true }));
-    }
-
-    // ── 4. Reproducir usando Web Audio API (nunca bloqueado) ─────
-    // BufferSource es la forma más confiable en desktop:
-    // no tiene restricciones de autoplay una vez que el contexto está desbloqueado.
-    function play(motivo) {
-      if (!actx) { console.warn('[Sound] Sin AudioContext'); return; }
-      if (!mp3Loaded || !mp3Buffer) { console.warn('[Sound] Buffer no listo aún'); return; }
-
-      // Si el contexto sigue suspended (usuario aún no interactuó),
-      // intentar resume() igual — en algunos navegadores funciona si
-      // la página tiene foco visible.
-      const doPlay = () => {
-        try {
-          const source = actx.createBufferSource();
-          source.buffer = mp3Buffer;
-          source.connect(actx.destination);
-          source.start(0);
-          console.log('🔔 [Sound] Sonando —', motivo);
-        } catch(e) {
-          console.warn('[Sound] Error al reproducir:', e.message);
-        }
-      };
-
-      if (actx.state === 'suspended') {
-        actx.resume().then(doPlay).catch(e => {
-          console.warn('[Sound] No se pudo resumir AudioContext:', e.message,
-            '— El usuario debe interactuar con la página primero.');
-        });
-      } else {
-        doPlay();
-      }
-    }
-
-    function isDesktop() {
-      // NOTA: Mac con trackpad reporta maxTouchPoints=5, por eso NO usamos esa propiedad.
-      // Solo excluimos dispositivos cuyo User-Agent indica móvil/tablet real.
-      const isMobileUA = /android|iphone|ipad|ipod|blackberry|windows phone|mobile/i.test(navigator.userAgent);
-      return !isMobileUA && window.screen.width > 1024;
-    }
-
-    function process(snapshot) {
-      // Primera carga: registrar IDs y estados sin sonar
-      if (_knownIds === null) {
-        _knownIds = new Set();
-        snapshot.forEach(d => {
-          _knownIds.add(d.id);
-          _prevStatus[d.id] = (d.data().status || '').toLowerCase();
-        });
-        console.log('[Sound] Inicio: ' + _knownIds.size + ' órdenes registradas. Desktop: ' + isDesktop());
-        return;
-      }
-
-      snapshot.docChanges().forEach(change => {
-        const id     = change.doc.id;
-        const data   = change.doc.data();
-        const status = (data.status || '').toLowerCase();
-
-        // ── NUEVA ORDEN → suena solo si este dispositivo es desktop ──
-        if (change.type === 'added' && !_knownIds.has(id)) {
-          _knownIds.add(id);
-          _prevStatus[id] = status;
-          if (isDesktop()) {
-            console.log('[Sound] Nueva orden detectada en desktop → sonando');
-            play('Nueva orden #' + (data.id || id));
-          } else {
-            console.log('[Sound] Nueva orden detectada en móvil/tablet → sin sonido');
-          }
-          return;
-        }
-
-        // ── ESTADO CAMBIÓ A "done" → suena en TODOS los dispositivos ──
-        if (change.type === 'modified') {
-          const anterior = _prevStatus[id] || '';
-          _prevStatus[id] = status;
-          if (status === 'done' && anterior !== 'done') {
-            console.log('[Sound] Orden TERMINADA detectada → sonando en todos los dispositivos');
-            play('Orden #' + (data.id || id) + ' TERMINADA');
-          }
-        }
-      });
-    }
-
-    function init() {
-      createCtx();
-      if (actx) loadSound();
-      setupUnlock();
-    }
-
-    init();
-    return { process };
-  })();
-  // =====================================================
-  // FIN SISTEMA DE SONIDO
-  // ===================================================== 
 
   let inventoryEditable = false;
   let inventoryData = {};
@@ -889,9 +821,6 @@
     const q = query(collection(window.db, "orders"), orderBy("id", "desc"));
     
     onSnapshot(q, (snapshot) => {
-      // 🔊 Sistema de sonido — procesa cambios ANTES de re-renderizar
-      _sound.process(snapshot);
-
       orders = [];
       clients = [];
       
@@ -1481,9 +1410,10 @@
         if (inventoryEditable) {
           return `
             <td>
-              <div style="text-align: center; margin-bottom: 6px; font-weight: bold; font-size: 11px; color: var(--accent);">
+              <div style="text-align: center; margin-bottom: 4px; font-weight: bold; font-size: 11px; color: var(--accent);">
                 Total: <span id="qty-${model}-battery" class="qty-display" style="font-size:15px;">${globalVal}</span>
               </div>
+              <div style="margin-bottom: 6px; text-align: center;">${globalStockTag}</div>
               
               <div class="battery-sub-container">
                 <div class="battery-sub-row">
@@ -1503,17 +1433,16 @@
                   </div>
                 </div>
               </div>
-              <div style="margin-top: 4px; text-align: center;">${globalStockTag}</div>
             </td>`;
         } else {
           return `
             <td>
               <div style="margin-bottom: 4px;"><span class="qty-display">${globalVal}</span> uni</div>
-              <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px; line-height: 1.3;">
+              <div style="margin-bottom: 4px;">${globalStockTag}</div>
+              <div style="font-size: 11px; color: var(--text-muted); line-height: 1.3;">
                 • Con Flex: <strong>${flexVal}</strong><br>
                 • Sin Flex: <strong>${noflexVal}</strong>
               </div>
-              ${globalStockTag}
             </td>`;
         }
       };
@@ -1679,6 +1608,15 @@
             <option value="waiting"  ${o.status==='waiting' ?'selected':''}>📦 Esp. Repuesto</option>
             <option value="done"     ${o.status==='done'    ?'selected':''}>✅ Terminado</option>
           </select>
+          ${o.assignedPiece
+            ? `<button onclick="promptInventoryKey(${o.id})" style="margin-top:6px;display:flex;align-items:center;gap:5px;background:linear-gradient(135deg,#0f172a,#1e1b4b);color:#a5b4fc;border:1.5px solid #4f46e5;border-radius:40px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;word-break:break-word;transition:opacity .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'" title="Cambiar pieza asignada">
+                <span style="font-size:12px;"></span>
+                <span>${o.assignedPiece}</span>
+              </button>`
+            : `<button onclick="promptInventoryKey(${o.id})" style="margin-top:6px;display:flex;align-items:center;gap:4px;background:linear-gradient(135deg,#1f2937,#374151);color:#d1d5db;border:none;border-radius:40px;padding:5px 9px;font-size:11px;font-weight:600;cursor:pointer;width:80%;justify-content:center;letter-spacing:0.3px;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:opacity .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'" title="Asignar repuesto a esta orden">
+                Asignar Repuesto
+              </button>`
+          }
         </td>
         <td>
           <div style="display: flex; gap: 8px; align-items: center;">
@@ -1868,6 +1806,478 @@
     }
   }
 
+// =====================================================
+  // 🔑 ASIGNACIÓN DE PIEZA DEL INVENTARIO
+  // =====================================================
+
+  let _invAssignOrderId = null;
+
+  function promptInventoryKey(orderId) {
+    _invAssignOrderId = orderId;
+    const input = document.getElementById('inv-key-assign-input');
+    if (input) input.value = '';
+    openModal('modal-inv-key-assign');
+    setTimeout(() => input && input.focus(), 150);
+  }
+
+async function submitInvKeyAssign() {
+    const inputElement = document.getElementById('inv-key-assign-input');
+    const entered = inputElement.value;
+
+    if (!entered) {
+      showToast('Error', 'Por favor ingresa una clave.', 'error');
+      return;
+    }
+
+    try {
+      // Usa exactamente la misma clave que ya te funciona en el inventario
+      const claveInv = await window.obtenerClaveSegura("inventory_password");
+
+      if (entered === claveInv && claveInv !== null) {
+        closeModal('modal-inv-key-assign');
+        openAssignPieceModal(_invAssignOrderId);
+        inputElement.value = ''; 
+      } else {
+        showToast('Clave incorrecta', 'La clave ingresada no es válida.', 'error');
+        inputElement.value = '';
+        inputElement.focus();
+      }
+    } catch (error) {
+      console.error("Error al validar la clave:", error);
+      showToast('Error', 'No se pudo validar la clave.', 'error');
+    }
+  }
+
+  // ── Custom model dropdown helpers ──────────────────────────
+  function buildModelList(filter) {
+    const list = document.getElementById('assign-model-list');
+    const query = (filter || '').toLowerCase().trim();
+    const items = iphoneModels.filter(m => !query || m.toLowerCase().includes(query));
+    const currentVal = document.getElementById('assign-model-select').value;
+
+    if (!items.length) {
+      list.innerHTML = '<div class="model-selector-empty">Sin resultados</div>';
+      return;
+    }
+    list.innerHTML = items.map(m =>
+      `<div class="model-selector-item${m === currentVal ? ' selected' : ''}" onclick="selectModelItem('${m.replace(/'/g,"\\'")}')">
+        <span>📱</span> ${m}
+      </div>`
+    ).join('');
+  }
+
+  function selectModelItem(model) {
+    document.getElementById('assign-model-select').value = model;
+    const lbl = document.getElementById('assign-model-label');
+    lbl.textContent = model;
+    lbl.classList.add('has-value');
+    closeModelDropdown();
+    updateAssignPreview();
+  }
+
+  function toggleModelDropdown() {
+    const wrap = document.getElementById('assign-model-wrap');
+    const isOpen = wrap.classList.contains('open');
+    if (isOpen) {
+      closeModelDropdown();
+    } else {
+      wrap.classList.add('open');
+      buildModelList('');
+      document.getElementById('assign-model-search').value = '';
+      setTimeout(() => document.getElementById('assign-model-search').focus(), 60);
+    }
+  }
+
+  function closeModelDropdown() {
+    document.getElementById('assign-model-wrap').classList.remove('open');
+  }
+
+  function filterModelDropdown(val) {
+    buildModelList(val);
+  }
+
+  // Cierra al hacer click fuera
+  document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('assign-model-wrap');
+    if (wrap && !wrap.contains(e.target)) closeModelDropdown();
+  });
+  // ────────────────────────────────────────────────────────────
+
+  function openAssignPieceModal(orderId) {
+    _invAssignOrderId = orderId;
+
+    // Reset custom selector
+    document.getElementById('assign-model-select').value = '';
+    const lbl = document.getElementById('assign-model-label');
+    lbl.textContent = '— Selecciona un modelo —';
+    lbl.classList.remove('has-value');
+    closeModelDropdown();
+
+    // Reset radios y preview
+    document.querySelectorAll('input[name="assign-piece"]').forEach(r => r.checked = false);
+    document.querySelectorAll('.assign-piece-opt').forEach(l => l.classList.remove('selected'));
+    document.getElementById('assign-stock-preview').style.display = 'none';
+    document.getElementById('assign-stock-warning').style.display = 'none';
+    document.getElementById('btn-confirm-assign').disabled = false;
+    document.getElementById('assign-otro-field').style.display = 'none';
+    document.getElementById('assign-otro-input').value = '';
+
+    // Mostrar botón eliminar solo si la orden ya tiene pieza asignada
+    const orderForDelete = orders.find(o => o.id === orderId);
+    const btnDelete = document.getElementById('btn-delete-assign');
+    btnDelete.style.display = (orderForDelete && orderForDelete.assignedPiece) ? 'inline-flex' : 'none';
+
+    document.querySelectorAll('input[name="assign-piece"]').forEach(r => {
+      r.onchange = () => {
+        document.querySelectorAll('.assign-piece-opt').forEach(l => l.classList.remove('selected'));
+        r.closest('.assign-piece-opt').classList.add('selected');
+        const otroField = document.getElementById('assign-otro-field');
+        if (r.value === 'otro') {
+          otroField.style.display = 'block';
+          setTimeout(() => document.getElementById('assign-otro-input').focus(), 50);
+        } else {
+          otroField.style.display = 'none';
+        }
+        updateAssignPreview();
+      };
+    });
+
+    openModal('modal-assign-piece');
+  }
+
+  function updateAssignPreview() {
+    const model = document.getElementById('assign-model-select').value;
+    const piece = document.querySelector('input[name="assign-piece"]:checked')?.value;
+    const previewBox = document.getElementById('assign-stock-preview');
+    const stockVal   = document.getElementById('assign-stock-value');
+    const warning    = document.getElementById('assign-stock-warning');
+    const btnConfirm = document.getElementById('btn-confirm-assign');
+
+    // Si es "otro", no hay stock que mostrar
+    if (piece === 'otro') {
+      previewBox.style.display = 'none';
+      warning.style.display = 'none';
+      btnConfirm.disabled = false;
+      return;
+    }
+
+    if (!model || !piece) { previewBox.style.display = 'none'; return; }
+
+    const data = inventoryData[model];
+    if (!data) { previewBox.style.display = 'none'; return; }
+
+    const qty = Number(data[piece] || 0);
+    const labels = { display:'Display', battery_flex:'Batería (con Flex)', battery_noflex:'Batería (sin Flex)', backcover:'Tapa Trasera', cover:'Cover' };
+
+    stockVal.textContent = `${qty} unidad${qty !== 1 ? 'es' : ''} — ${labels[piece] || piece}`;
+    previewBox.style.display = 'block';
+
+    if (qty <= 0) {
+      warning.style.display = 'block';
+      btnConfirm.disabled = true;
+    } else {
+      warning.style.display = 'none';
+      btnConfirm.disabled = false;
+    }
+  }
+
+  async function confirmAssignPiece() {
+    const model = document.getElementById('assign-model-select').value;
+    const piece = document.querySelector('input[name="assign-piece"]:checked')?.value;
+
+    if (!model) { showToast('Falta modelo', 'Selecciona un modelo del inventario.', 'warning'); return; }
+    if (!piece)  { showToast('Falta pieza',  'Selecciona una pieza a descontar.', 'warning'); return; }
+
+    const pieceLabels = { display:'Display', battery_flex:'Batería (con Flex)', battery_noflex:'Batería (sin Flex)', backcover:'Tapa Trasera', cover:'Cover' };
+
+    // Detectar si es edición (la orden ya tenía pieza asignada)
+    const order = _invAssignOrderId ? orders.find(o => o.id === _invAssignOrderId) : null;
+    const isEdit = !!(order && order.assignedPiece);
+
+    // Caso especial: "Otro" — solo registra en la orden, no descuenta stock
+    if (piece === 'otro') {
+      const otraDesc = document.getElementById('assign-otro-input').value.trim();
+      if (!otraDesc) {
+        showToast('Especifica la pieza', 'Escribe el nombre de la pieza en el campo "Otro".', 'warning');
+        document.getElementById('assign-otro-input').focus();
+        return;
+      }
+      try {
+        if (order) {
+          order.assignedPiece = `${otraDesc} — ${model}`;
+          const { doc: docFn, setDoc: setDocFn } = window.dbModules;
+          await setDocFn(docFn(window.db, "orders", _invAssignOrderId.toString()), order);
+          renderAll();
+        }
+        closeModal('modal-assign-piece');
+        showToast('✅ Pieza registrada', `Se registró: "${otraDesc}" para ${model}. Sin cambios en stock.`, 'success', 4500);
+      } catch (err) {
+        console.error("Error al registrar pieza:", err);
+        showToast('Error', 'No se pudo guardar en Firebase.', 'error');
+      }
+      return;
+    }
+
+    const data = inventoryData[model];
+    if (!data) return;
+
+    const pieceLabel = pieceLabels[piece] || piece;
+    const { doc, setDoc } = window.dbModules;
+
+    // Helper para guardar un modelo en Firebase
+    async function saveModelToFirebase(modelKey, modelData) {
+      const safeKey = modelKey.replace(/\//g, '_').replace(/\s+/g, '_');
+      await setDoc(doc(window.db, "inventory", safeKey), {
+        display:           Number(modelData.display        || 0),
+        battery:           Number(modelData.battery        || 0),
+        battery_flex:      Number(modelData.battery_flex   || 0),
+        battery_noflex:    Number(modelData.battery_noflex || 0),
+        backcover:         Number(modelData.backcover      || 0),
+        cover:             Number(modelData.cover          || 0),
+        backcover_details: modelData.backcover_details || "",
+        cover_details:     modelData.cover_details     || ""
+      });
+    }
+
+    try {
+      if (isEdit) {
+        // Parsear pieza y modelo anteriores desde "Batería (con Flex) — iPhone 13"
+        const prevAssigned = order.assignedPiece; // ej: "Display — iPhone 12"
+        const dashIdx = prevAssigned.lastIndexOf(' — ');
+        if (dashIdx !== -1) {
+          const prevPieceLabel = prevAssigned.substring(0, dashIdx).trim();
+          const prevModel      = prevAssigned.substring(dashIdx + 3).trim();
+          // Buscar la clave del campo por el label anterior
+          const labelToKey = { 'Display':'display', 'Batería (con Flex)':'battery_flex', 'Batería (sin Flex)':'battery_noflex', 'Tapa Trasera':'backcover', 'Cover':'cover' };
+          const prevPieceKey = labelToKey[prevPieceLabel];
+          if (prevPieceKey && inventoryData[prevModel]) {
+            // Devolver al inventario la pieza anterior
+            inventoryData[prevModel][prevPieceKey] = Number(inventoryData[prevModel][prevPieceKey] || 0) + 1;
+            if (prevPieceKey === 'battery_flex' || prevPieceKey === 'battery_noflex') {
+              inventoryData[prevModel].battery = Number(inventoryData[prevModel].battery_flex || 0) + Number(inventoryData[prevModel].battery_noflex || 0);
+            }
+            await saveModelToFirebase(prevModel, inventoryData[prevModel]);
+          }
+        }
+
+        // Descontar la nueva pieza
+        const qty = Number(data[piece] || 0);
+        if (qty <= 0) { showToast('Sin stock', 'No hay unidades disponibles de esta pieza.', 'error'); return; }
+        data[piece] = qty - 1;
+        if (piece === 'battery_flex' || piece === 'battery_noflex') {
+          data.battery = Number(data.battery_flex || 0) + Number(data.battery_noflex || 0);
+        }
+        await saveModelToFirebase(model, data);
+
+      } else {
+        // Asignación nueva: solo descontar
+        const qty = Number(data[piece] || 0);
+        if (qty <= 0) { showToast('Sin stock', 'No hay unidades disponibles de esta pieza.', 'error'); return; }
+        data[piece] = qty - 1;
+        if (piece === 'battery_flex' || piece === 'battery_noflex') {
+          data.battery = Number(data.battery_flex || 0) + Number(data.battery_noflex || 0);
+        }
+        await saveModelToFirebase(model, data);
+      }
+
+      // Guardar pieza asignada en la orden
+      if (order) {
+        order.assignedPiece = `${pieceLabel} — ${model}`;
+        const { doc: docFn, setDoc: setDocFn } = window.dbModules;
+        await setDocFn(docFn(window.db, "orders", _invAssignOrderId.toString()), order);
+        renderAll();
+      }
+
+      closeModal('modal-assign-piece');
+      const toastMsg = isEdit
+        ? `Pieza actualizada a: ${pieceLabel} — ${model}.`
+        : `Se descontó 1 ${pieceLabel} de ${model}. Stock restante: ${data[piece]}.`;
+      showToast('✅ ' + (isEdit ? 'Pieza actualizada' : 'Pieza descontada'), toastMsg, 'success', 4500);
+
+    } catch (err) {
+      console.error("Error al guardar:", err);
+      showToast('Error', 'No se pudo actualizar en Firebase.', 'error');
+    }
+  }
+
+  // =====================================================
+  // =====================================================
+  // 🗑️ ELIMINAR PIEZA ASIGNADA Y DEVOLVER AL INVENTARIO
+  // =====================================================
+
+  async function deleteAssignedPiece() {
+    const order = _invAssignOrderId ? orders.find(o => o.id === _invAssignOrderId) : null;
+    if (!order || !order.assignedPiece) {
+      showToast('Sin pieza', 'Esta orden no tiene ninguna pieza asignada.', 'warning');
+      return;
+    }
+
+    const prevAssigned = order.assignedPiece; // ej: "Display — iPhone 13"
+    const dashIdx = prevAssigned.lastIndexOf(' — ');
+
+    const { doc, setDoc } = window.dbModules;
+
+    // Helper para guardar modelo en Firebase
+    async function saveModelToFirebase(modelKey, modelData) {
+      const safeKey = modelKey.replace(/\//g, '_').replace(/\s+/g, '_');
+      await setDoc(doc(window.db, 'inventory', safeKey), {
+        display:           Number(modelData.display        || 0),
+        battery:           Number(modelData.battery        || 0),
+        battery_flex:      Number(modelData.battery_flex   || 0),
+        battery_noflex:    Number(modelData.battery_noflex || 0),
+        backcover:         Number(modelData.backcover      || 0),
+        cover:             Number(modelData.cover          || 0),
+        backcover_details: modelData.backcover_details || '',
+        cover_details:     modelData.cover_details     || ''
+      });
+    }
+
+    try {
+      // Devolver stock al inventario si es una pieza conocida (no "Otro")
+      if (dashIdx !== -1) {
+        const prevPieceLabel = prevAssigned.substring(0, dashIdx).trim();
+        const prevModel      = prevAssigned.substring(dashIdx + 3).trim();
+        const labelToKey = {
+          'Display':              'display',
+          'Batería (con Flex)':   'battery_flex',
+          'Batería (sin Flex)':   'battery_noflex',
+          'Tapa Trasera':         'backcover',
+          'Cover':                'cover'
+        };
+        const prevPieceKey = labelToKey[prevPieceLabel];
+        if (prevPieceKey && inventoryData[prevModel]) {
+          inventoryData[prevModel][prevPieceKey] = Number(inventoryData[prevModel][prevPieceKey] || 0) + 1;
+          if (prevPieceKey === 'battery_flex' || prevPieceKey === 'battery_noflex') {
+            inventoryData[prevModel].battery = Number(inventoryData[prevModel].battery_flex || 0) + Number(inventoryData[prevModel].battery_noflex || 0);
+          }
+          await saveModelToFirebase(prevModel, inventoryData[prevModel]);
+        }
+      }
+
+      // Limpiar la pieza de la orden
+      order.assignedPiece = null;
+      const { doc: docFn, setDoc: setDocFn } = window.dbModules;
+      await setDocFn(docFn(window.db, 'orders', _invAssignOrderId.toString()), order);
+
+      closeModal('modal-assign-piece');
+      renderAll();
+      showToast('✅ Pieza eliminada', `La pieza "${prevAssigned}" fue quitada y el stock fue devuelto al inventario.`, 'success', 4500);
+
+    } catch (err) {
+      console.error('Error al eliminar pieza:', err);
+      showToast('Error', 'No se pudo completar la operación en Firebase.', 'error');
+    }
+  }
+
+  // FIN ASIGNACIÓN DE PIEZA
+  // =====================================================
+
+  // =====================================================
+  // 📊 EXPORTAR INVENTARIO A EXCEL
+  // =====================================================
+  function exportInventoryToExcel() {
+    if (!inventoryData || Object.keys(inventoryData).length === 0) {
+      showToast('Sin datos', 'No hay datos de inventario para exportar.', 'warning');
+      return;
+    }
+
+    const now = new Date();
+    const dateStr = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()}`;
+    const fileDate = `${now.getDate().toString().padStart(2,'0')}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getFullYear()}`;
+
+    const headers = [
+      "Modelo iPhone", "Display", "Batería (Total)",
+      "Batería (con Flex)", "Batería (sin Flex)",
+      "Tapa Trasera", "Cover"
+    ];
+
+    const rows = Object.entries(inventoryData).map(([model, data]) => [
+      model,
+      Number(data.display        || 0),
+      Number(data.battery        || 0),
+      Number(data.battery_flex   || 0),
+      Number(data.battery_noflex || 0),
+      Number(data.backcover      || 0),
+      Number(data.cover          || 0)
+    ]);
+    rows.sort((a, b) => a[0].localeCompare(b[0]));
+
+    const lastCol = XLSX.utils.encode_col(headers.length - 1); // "G"
+    const dataStartRow = 5; // fila 5 (0-indexed: 4)
+    const dataEndRow   = dataStartRow + rows.length - 1;
+
+    const worksheet = XLSX.utils.aoa_to_sheet([]);
+
+    // Fila 1: Título principal
+    XLSX.utils.sheet_add_aoa(worksheet, [["SMART PLANET — INVENTARIO DE PIEZAS"]], { origin: "A1" });
+    // Fila 2: Subtítulo con fecha
+    XLSX.utils.sheet_add_aoa(worksheet, [[`Reporte generado: ${dateStr}`]], { origin: "A2" });
+    // Fila 3: vacía (espacio visual)
+    XLSX.utils.sheet_add_aoa(worksheet, [[""]], { origin: "A3" });
+    // Fila 4: encabezados de la tabla
+    XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: "A4" });
+    // Fila 5+: datos
+    XLSX.utils.sheet_add_aoa(worksheet, rows, { origin: `A${dataStartRow}` });
+
+    // Merge del título y subtítulo
+    worksheet['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } }
+    ];
+
+    // Tabla oficial de Excel (permite filtros, bandas de color, etc.)
+    if (!worksheet['!tables']) worksheet['!tables'] = [];
+    worksheet['!tables'].push({
+      name: "TablaInventario",
+      ref: `A4:${lastCol}${dataEndRow}`,
+      headerRow: true,
+      totalsRow: false,
+      style: {
+        name: "TableStyleMedium9",   // estilo verde-azul de Excel
+        showFirstColumn: false,
+        showLastColumn:  false,
+        showRowStripes:  true,
+        showColumnStripes: false
+      },
+      columns: headers.map(h => ({ name: h }))
+    });
+
+    // Estilos de celdas (título y subtítulo)
+    const titleCell = worksheet["A1"];
+    titleCell.s = {
+      font:      { bold: true, sz: 16, color: { rgb: "FFFFFF" } },
+      fill:      { fgColor: { rgb: "1D3557" } },
+      alignment: { horizontal: "center", vertical: "center" }
+    };
+
+    const subCell = worksheet["A2"];
+    subCell.s = {
+      font:      { italic: true, sz: 11, color: { rgb: "FFFFFF" } },
+      fill:      { fgColor: { rgb: "457B9D" } },
+      alignment: { horizontal: "center", vertical: "center" }
+    };
+
+    worksheet['!rows'] = [
+      { hpt: 30 }, // fila 1 — título
+      { hpt: 20 }, // fila 2 — subtítulo
+      { hpt: 8  }, // fila 3 — espacio
+      { hpt: 18 }  // fila 4 — encabezados tabla
+    ];
+
+    worksheet['!cols'] = [
+      {wch: 26}, {wch: 12}, {wch: 18},
+      {wch: 20}, {wch: 20}, {wch: 16}, {wch: 12}
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventario Smart Planet");
+
+    XLSX.writeFile(workbook, `Inventario_Smart_Planet_${fileDate}.xlsx`);
+    showToast('¡Éxito!', 'Inventario exportado con título y tabla.', 'success');
+  }
+  // FIN EXPORTAR INVENTARIO
+  // =====================================================
+
 // Agregado el parámetro 'rows' faltante en sheet_add_aoa */
   function exportToExcel() {
     if (orders.length === 0) {
@@ -1884,35 +2294,66 @@
       "Equipo / Color", "Falla / Reparación", "Detalle Técnico", 
       "IMEI / Serie", "Código Desbloqueo", "Fecha Compra", 
       "Estado Equipo", "Tipo Servicio", "Estado Proceso", 
-      "Estado Pago", "Retirado", "Costo ($)"
+      "Estado Pago", "Retirado", "Costo ($)", "Pieza Cambiada"
     ];
 
-    const rows = orders.map(o => [
+    const activeMonth = document.getElementById("filter-month")?.value || "";
+    const activeYear  = document.getElementById("filter-year")?.value || "";
+    const altMonth = activeMonth ? parseInt(activeMonth, 10).toString() : "";
+
+    const filteredOrders = orders.filter(o => {
+      const d = o.date || "";
+      let okMonth = true, okYear = true;
+      if (activeMonth) {
+        okMonth = d.includes("/" + activeMonth + "/") || d.includes("/" + altMonth + "/") ||
+                  d.includes("-" + activeMonth + "-") || d.includes("-" + altMonth + "-");
+      }
+      if (activeYear) okYear = d.includes(activeYear);
+      return okMonth && okYear;
+    });
+
+    const rows = filteredOrders.map(o => [
       o.id, o.date, o.advisor, o.name, o.phone,
       o.device, o.issue, o.detail, o.imei || "N/A", o.unlock || "N/A",
-      o.buydate || "No especificada", o.equipState === 'apagado' ? 'Apagado' : 'Revisado',
+      o.buydate || "No especificada", o.equipState === "apagado" ? "Apagado" : "Revisado",
       readableSvc[o.svcType] || o.svcType, readableStatus[o.status] || o.status,
-      readablePay[o.payState] || o.payState, o.delivered === 'si' ? 'SÍ' : 'NO', o.cost
+      readablePay[o.payState] || o.payState, o.delivered === "si" ? "SÍ" : "NO", o.cost,
+      o.assignedPiece || "Sin pieza asignada"
     ]);
+
+    if (filteredOrders.length === 0) {
+      showToast("Sin datos", "No hay órdenes para el mes/período seleccionado.", "warning");
+      return;
+    }
+
+
+    const now = new Date();
+    const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const reportMonth = activeMonth ? monthNames[parseInt(activeMonth, 10) - 1] : monthNames[now.getMonth()];
+    const monthLabel = `Reporte de ${reportMonth}`;
 
     const worksheet = XLSX.utils.aoa_to_sheet([]);
 
-    XLSX.utils.sheet_add_aoa(worksheet, [["SMART PLANET - SERVICIO TÉCNICO"]], { origin: "A1" });
-    XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: "A3" });
-    XLSX.utils.sheet_add_aoa(worksheet, rows, { origin: "A4" }); // 🛠️ Corrección: Agregado el argumento de los datos
+    XLSX.utils.sheet_add_aoa(worksheet, [["SMART PLANET - SERVICIO TECNICO"]], { origin: "A1" });
+    XLSX.utils.sheet_add_aoa(worksheet, [[monthLabel]], { origin: "A2" });
+    XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: "A4" });
+    XLSX.utils.sheet_add_aoa(worksheet, rows, { origin: "A5" });
 
-    worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }];
+    worksheet['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: headers.length - 1 } }
+    ];
 
-    const totalRows = rows.length + 3;
+    const totalRows = rows.length + 4;
     worksheet['!autofilter'] = {
-      ref: XLSX.utils.encode_range({ s: { c: 0, r: 2 }, e: { c: headers.length - 1, r: totalRows } })
+      ref: XLSX.utils.encode_range({ s: { c: 0, r: 3 }, e: { c: headers.length - 1, r: totalRows } })
     };
 
     const colWidths = [
       {wch: 11}, {wch: 13}, {wch: 16}, {wch: 26}, {wch: 16}, 
       {wch: 24}, {wch: 26}, {wch: 36}, {wch: 20}, {wch: 16}, 
       {wch: 16}, {wch: 15}, {wch: 18}, {wch: 20}, {wch: 15}, 
-      {wch: 11}, {wch: 13}
+      {wch: 11}, {wch: 13}, {wch: 32}
     ];
     worksheet['!cols'] = colWidths;
 
